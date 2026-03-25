@@ -9,6 +9,13 @@ export const categorySchema = z.enum([
 
 export type Category = z.infer<typeof categorySchema>;
 
+export const CATEGORY_LABELS: Record<Category, string> = {
+	shoes: '신발',
+	tops: '상의',
+	bottoms: '하의',
+	accessories: '악세서리',
+};
+
 export const productSchema = z.object({
 	id: z.number(),
 	name: z.string(),
@@ -29,6 +36,13 @@ export const productsSortOptionSchema = z.enum([
 ]);
 
 export type ProductsSortOption = z.infer<typeof productsSortOptionSchema>;
+
+export const SORT_OPTION_LABELS: Record<ProductsSortOption, string> = {
+	price_asc: '가격 낮은순',
+	price_desc: '가격 높은순',
+	newest: '최신순',
+	rating: '평점순',
+};
 
 export const productsRequestSchema = z.object({
 	categories: z.array(categorySchema),
