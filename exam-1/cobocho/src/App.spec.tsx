@@ -52,11 +52,11 @@ describe('URL 동기화', () => {
 		expect(screen.getByText('평점순')).toHaveClass('text-black');
 	});
 
-	it('초기화 버튼을 누르면 URL 쿼리스트링이 비워진다', async () => {
+	it('초기화 버튼을 누르면 필터/정렬 쿼리스트링이 비워진다', async () => {
 		window.history.replaceState(
 			{},
 			'',
-			'/?keyword=나이키&categories=shoes&sort=price_asc',
+			'/?categories=shoes&sort=price_asc',
 		);
 		const user = userEvent.setup();
 		render(<App />);
