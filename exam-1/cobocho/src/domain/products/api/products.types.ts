@@ -45,9 +45,9 @@ export const SORT_OPTION_LABELS: Record<ProductsSortOption, string> = {
 };
 
 export const productsRequestSchema = z.object({
-	categories: z.array(categorySchema),
-	keyword: z.string(),
-	sort: productsSortOptionSchema,
+	categories: z.array(categorySchema).nullable().default(null),
+	keyword: z.string().nullable().default(null),
+	sort: productsSortOptionSchema.nullable().default(null),
 	page: z.number().default(1),
 	size: z.number().default(20),
 });
