@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noArrayIndexKey: <explanation> */
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
@@ -7,6 +8,8 @@ import { VStack } from '@/components/layout';
 import { productsQuery } from '../../api/products.query';
 import type { ProductsRequest } from '../../api/products.types';
 import { ProductCard } from '../product-card/product-card';
+import { Skeleton } from '@/components/skeleton';
+import { Card } from '@/components/card';
 import { InternalServerError, ServiceUnavailableError } from '@/libs/errors';
 
 interface ProductsInfinityListProps {
@@ -46,6 +49,10 @@ export const ProductsInfinityList = ({
 
 	const isBlank = !isError && !isLoading && products.length === 0;
 
+	if (isLoading) {
+		return <ProductListSkeleton />;
+	}
+
 	return (
 		<InfinityScroll
 			onFetchMore={handleFetchMore}
@@ -75,3 +82,29 @@ export const ProductsInfinityList = ({
 		</InfinityScroll>
 	);
 };
+
+function ProductListSkeleton() {
+	return (
+		<Grid
+			columns={2}
+			gap={4}
+		>
+			{Array.from({ length: 20 }, (_, i) => (
+				<Card
+					key={i}
+					className="overflow-hidden p-0"
+				>
+					<Skeleton className="aspect-square w-full" />
+					<VStack
+						gap={1}
+						className="p-3"
+					>
+						<Skeleton className="h-5 w-3/4" />
+						<Skeleton className="h-4 w-1/2" />
+						<Skeleton className="h-3 w-full" />
+					</VStack>
+				</Card>
+			))}
+		</Grid>
+	);
+}
