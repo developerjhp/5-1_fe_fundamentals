@@ -13,7 +13,7 @@ function App() {
   const { reset } = useQueryErrorResetBoundary();
 
   return (
-    <div className="w-full h-dvh bg-gray-200">
+    <div className="w-full h-dvh bg-gray-200 mx-auto px-[80px]">
       <h1>🧪 Exam 1: 다중 필터 상품 목록</h1>
       <ErrorBoundary FallbackComponent={ErrorFallback} onReset={reset}>
         <Suspense fallback={<LoadingFallback />}>
