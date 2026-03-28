@@ -1,6 +1,8 @@
+import './styles/App.css';
+
 function App() {
   return (
-    <div>
+    <div className="w-full h-dvh bg-gray-200">
       <h1>🧪 Exam 1: 다중 필터 상품 목록</h1>
       <p>여기서부터 시작하세요! 이 파일을 자유롭게 수정해주세요.</p>
       <p>
