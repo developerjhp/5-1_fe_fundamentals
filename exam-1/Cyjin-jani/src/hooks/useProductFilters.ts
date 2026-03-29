@@ -2,7 +2,7 @@ import { useTransition } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { Category, SortOption } from '@/types/product';
 
-interface ProductFiltersReturn {
+export interface ProductFiltersReturn {
   filters: {
     categories: Category[];
     keyword: string;

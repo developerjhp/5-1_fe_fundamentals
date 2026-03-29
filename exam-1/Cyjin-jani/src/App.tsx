@@ -6,7 +6,7 @@ import {
   type FallbackProps,
   getErrorMessage,
 } from 'react-error-boundary';
-import { Products } from './components/Products';
+import { Products } from './components/products/Products';
 
 function App() {
   const { reset } = useQueryErrorResetBoundary();

@@ -1,18 +1,18 @@
 import { RotateCcw } from 'lucide-react';
 import { type ChangeEvent, useCallback, useRef } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
-import { useProductFilters } from '@/hooks/useProductFilters';
 import type { Category, SortOption } from '@/types/product';
-import { Button } from './ui/button';
-import { Checkbox } from './ui/checkbox';
-import { Input } from './ui/input';
+import { Button } from '../ui/button';
+import { Checkbox } from '../ui/checkbox';
+import { Input } from '../ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './ui/select';
+} from '../ui/select';
+import { useProductFilterContext } from './ProductFilterContext';
 
 const categories: Category[] = ['accessories', 'bottoms', 'shoes', 'tops'];
 
@@ -32,8 +32,7 @@ export const ProductFilters = () => {
     toggleCategory,
     setSort,
     resetFilters,
-  } = useProductFilters();
-
+  } = useProductFilterContext();
   const inputRef = useRef<HTMLInputElement>(null);
   const debouncedSetKeyword = useDebounce(setKeyword, 500);
 

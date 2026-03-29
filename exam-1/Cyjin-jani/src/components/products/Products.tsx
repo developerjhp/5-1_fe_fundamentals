@@ -1,23 +1,27 @@
+import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
-import { useProductFilters } from '@/hooks/useProductFilters';
 import { useProducts } from '@/hooks/useProducts';
 import { ProductCard } from './ProductCard';
+import {
+  ProductFilterProvider,
+  useProductFilterContext,
+} from './ProductFilterContext';
 import { ProductFilters } from './ProductFilters';
 
-export const Products = () => {
-  return (
+export const Products = () => (
+  <ProductFilterProvider>
     <div className="w-full max-w-[860px] mx-auto px-4 py-6">
       <ProductFilters />
       <Suspense fallback={<LoadingFallback />}>
         <ProductList />
       </Suspense>
     </div>
-  );
-};
+  </ProductFilterProvider>
+);
 
 const LoadingFallback = () => (
   <div className="grid grid-cols-4 gap-4 mt-6">
-    {Array.from({ length: 8 }).map((_, i) => (
+    {Array.from({ length: 12 }).map((_, i) => (
       <div
         key={`loading-${
           // biome-ignore lint/suspicious/noArrayIndexKey: skeleton index
@@ -30,7 +34,7 @@ const LoadingFallback = () => (
 );
 
 const ProductList = () => {
-  const { filters } = useProductFilters();
+  const { filters, isPending } = useProductFilterContext();
   const { data } = useProducts(filters);
 
   if (data.products.length === 0) {
@@ -43,7 +47,14 @@ const ProductList = () => {
 
   return (
     <div className="mt-6">
-      <div className="grid grid-cols-4 gap-4">
+      {isPending && (
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex items-start justify-center rounded-lg bg-white/60">
+          <Loader2 className="h-8 w-8 animate-spin text-black" />
+        </div>
+      )}
+      <div
+        className={`grid grid-cols-4 gap-4 transition-opacity duration-200 ${isPending ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}
+      >
         {data.products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
