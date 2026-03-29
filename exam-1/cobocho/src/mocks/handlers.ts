@@ -22,7 +22,7 @@ function randomDelay(): number {
  * 500 또는 503 상태 코드를 무작위로 선택합니다.
  */
 function maybeError(): Response | null {
-	if (Math.random() < 0.5) {
+	if (Math.random() < 0.1) {
 		const status = Math.random() < 0.5 ? 500 : 503;
 		return HttpResponse.json(
 			{

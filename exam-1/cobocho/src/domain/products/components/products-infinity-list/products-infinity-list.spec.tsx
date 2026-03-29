@@ -12,8 +12,6 @@ vi.mock('sonner', () => ({
 	toast: { error: vi.fn() },
 }));
 
-import { toast } from 'sonner';
-
 vi.mock('../../api/products.service', () => ({
 	productsService: {
 		getProducts: vi.fn(),
@@ -75,7 +73,7 @@ describe('ProductsInfinityList', () => {
 	it('상품 데이터를 불러와 카드로 렌더링한다', async () => {
 		mockGetProducts.mockResolvedValue(mockResponse(1, 1));
 
-		render(<ProductsInfinityList filters={defaultFilters} />, {
+		render(<ProductsInfinityList options={defaultFilters} />, {
 			wrapper: createWrapper(),
 		});
 
@@ -87,11 +85,16 @@ describe('ProductsInfinityList', () => {
 	it('API 에러 시 다시 시도 버튼이 표시된다', async () => {
 		mockGetProducts.mockRejectedValue(new Error('server error'));
 
-		render(<ProductsInfinityList filters={defaultFilters} />, {
+		render(<ProductsInfinityList options={defaultFilters} />, {
 			wrapper: createWrapper(),
 		});
 
-		expect(screen.getByText('다시 시도')).toBeInTheDocument();
+		await waitFor(
+			() => {
+				expect(screen.getByText('다시 시도')).toBeInTheDocument();
+			},
+			{ timeout: 5000 },
+		);
 	});
 
 	it('다시 시도 버튼을 클릭하면 재요청한다', async () => {
@@ -100,7 +103,7 @@ describe('ProductsInfinityList', () => {
 			.mockRejectedValueOnce(new Error('server error'))
 			.mockResolvedValueOnce(mockResponse(1, 1));
 
-		render(<ProductsInfinityList filters={defaultFilters} />, {
+		render(<ProductsInfinityList options={defaultFilters} />, {
 			wrapper: createWrapper(),
 		});
 
@@ -127,7 +130,7 @@ describe('ProductsInfinityList', () => {
 			totalPages: 0,
 		});
 
-		render(<ProductsInfinityList filters={defaultFilters} />, {
+		render(<ProductsInfinityList options={defaultFilters} />, {
 			wrapper: createWrapper(),
 		});
 

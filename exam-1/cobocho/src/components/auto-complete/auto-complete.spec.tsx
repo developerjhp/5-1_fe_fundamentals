@@ -1,6 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AutoComplete, AutoCompleteItem } from './auto-complete';
+import {
+	AutoComplete,
+	AutoCompleteInput,
+	AutoCompleteContent,
+	AutoCompleteItem,
+} from './auto-complete';
 
 const items = ['Apple', 'Banana', 'Avocado'];
 
@@ -21,12 +26,15 @@ const renderAutoComplete = (
 		...props,
 		...render(
 			<AutoComplete {...props}>
-				{items.map((item) => (
-					<AutoCompleteItem
-						key={item}
-						value={item}
-					/>
-				))}
+				<AutoCompleteInput />
+				<AutoCompleteContent>
+					{items.map((item) => (
+						<AutoCompleteItem
+							key={item}
+							value={item}
+						/>
+					))}
+				</AutoCompleteContent>
 			</AutoComplete>,
 		),
 	};
@@ -99,7 +107,10 @@ describe('AutoComplete', () => {
 	it('children이 없으면 목록이 표시되지 않는다', async () => {
 		render(
 			<AutoComplete value="" onChange={vi.fn()} onSelect={vi.fn()}>
-				{[]}
+				<AutoCompleteInput />
+				<AutoCompleteContent>
+					{[]}
+				</AutoCompleteContent>
 			</AutoComplete>,
 		);
 		await userEvent.click(screen.getByRole('combobox'));

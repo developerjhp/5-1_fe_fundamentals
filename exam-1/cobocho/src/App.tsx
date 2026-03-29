@@ -14,18 +14,21 @@ import {
 	parseAsString,
 	useQueryStates,
 } from './hooks/use-query-state';
+import { DEFAULT_PRODUCTS_REQUEST } from './domain/products/components/product-search-filter/product-search-filter.constants';
 
 function App() {
 	const [filters, setFilters] = useQueryStates<ProductsRequest>({
 		categories: parseAsArrayOf(parseAsEnum(categorySchema.options))
 			.nullable()
-			.withDefault(null),
-		keyword: parseAsString.nullable().withDefault(null),
+			.withDefault(DEFAULT_PRODUCTS_REQUEST.categories),
+		keyword: parseAsString
+			.nullable()
+			.withDefault(DEFAULT_PRODUCTS_REQUEST.keyword),
 		sort: parseAsEnum(productsSortOptionSchema.options)
 			.nullable()
-			.withDefault(null),
-		page: parseAsInteger.withDefault(1),
-		size: parseAsInteger.withDefault(20),
+			.withDefault(DEFAULT_PRODUCTS_REQUEST.sort),
+		page: parseAsInteger.withDefault(DEFAULT_PRODUCTS_REQUEST.page),
+		size: parseAsInteger.withDefault(DEFAULT_PRODUCTS_REQUEST.size),
 	});
 
 	return (
@@ -39,7 +42,7 @@ function App() {
 					value={filters}
 					onChange={setFilters}
 				/>
-				<ProductsInfinityList filters={filters} />
+				<ProductsInfinityList options={filters} />
 			</VStack>
 		</VStack>
 	);

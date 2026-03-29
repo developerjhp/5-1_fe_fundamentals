@@ -11,21 +11,20 @@ import { Skeleton } from '@/components/skeleton';
 import { Card } from '@/components/card';
 
 interface ProductsInfinityListProps {
-	filters: ProductsRequest;
+	options: ProductsRequest;
 }
 
 export const ProductsInfinityList = ({
-	filters,
+	options,
 }: ProductsInfinityListProps) => {
 	const {
 		data,
-		error,
 		fetchNextPage,
 		hasNextPage,
 		isFetchingNextPage,
 		isLoading,
 		isError,
-	} = useInfiniteQuery(productsQuery.getInfiniteProductsQueryOptions(filters));
+	} = useInfiniteQuery(productsQuery.getInfiniteProductsQueryOptions(options));
 
 	const handleFetchMore = useCallback(async () => {
 		await fetchNextPage();
@@ -37,6 +36,21 @@ export const ProductsInfinityList = ({
 
 	if (isLoading) {
 		return <ProductListSkeleton />;
+	}
+
+	if (isError) {
+		return (
+			<VStack align="center" className="py-12 text-gray-400">
+				<p>문제가 발생했습니다</p>
+				<button
+					type="button"
+					className="rounded-md border border-gray-300 px-4 py-1.5 text-sm transition-colors hover:bg-gray-100"
+					onClick={() => fetchNextPage()}
+				>
+					다시 시도
+				</button>
+			</VStack>
+		);
 	}
 
 	return (
@@ -75,7 +89,7 @@ function ProductListSkeleton() {
 			columns={2}
 			gap={4}
 		>
-			{Array.from({ length: 20 }, (_, i) => (
+			{Array.from({ length: 10 }, (_, i) => (
 				<Card
 					key={i}
 					className="overflow-hidden p-0"

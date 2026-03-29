@@ -1,11 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import {
 	AutoComplete,
+	AutoCompleteInput,
+	AutoCompleteContent,
 	AutoCompleteItem,
 } from '@/components/auto-complete/auto-complete';
-import { debounce } from 'es-toolkit';
 import { productsQuery } from '../../api/products.query';
+import { useDebouncedState } from '@/hooks/use-debounced-state';
+import { useState } from 'react';
 
 interface ProductAutoCompleteProps {
 	value: string;
@@ -18,54 +20,34 @@ export const ProductAutoComplete = ({
 	onChange,
 	debounceMs = 500,
 }: ProductAutoCompleteProps) => {
-	const [keyword, setKeyword] = useState(value);
-	const [debouncedKeyword, setDebouncedKeyword] = useState(keyword);
-
-	const debouncedSetKeyword = useMemo(
-		() => debounce((v: string) => setDebouncedKeyword(v), debounceMs),
-		[debounceMs],
-	);
-
-	const handleChange = (v: string) => {
-		setKeyword(v);
-		debouncedSetKeyword(v);
-	};
-
-	useEffect(() => {
-		setKeyword(value);
-	}, [value]);
-
-	const onChangeRef = useRef(onChange);
-	onChangeRef.current = onChange;
-
-	useEffect(() => {
-		onChangeRef.current(debouncedKeyword);
-	}, [debouncedKeyword]);
+	const { value: inputValue, debouncedValue, handleChange, handleSelect } =
+		useDebouncedState(value, onChange, debounceMs);
+	const [open, setOpen] = useState(false);
 
 	const { data, isFetching } = useQuery({
-		...productsQuery.getAutoCompleteQueryOptions({ keyword: debouncedKeyword }),
-		enabled: debouncedKeyword.length > 0,
-		placeholderData: { suggestions: [] },
+		...productsQuery.getAutoCompleteQueryOptions({ keyword: debouncedValue }),
+		enabled: open && debouncedValue.length > 0,
+		placeholderData: keepPreviousData,
 	});
 
-	const suggestions = data?.suggestions ?? [];
+	const suggestions = debouncedValue.length > 0 ? (data?.suggestions ?? []) : [];
 
 	return (
 		<AutoComplete
-			value={keyword}
+			value={inputValue}
 			onChange={handleChange}
-			loading={isFetching}
-			onSelect={(selected) => {
-				setKeyword(selected);
-				onChange(selected);
-			}}
+			onSelect={handleSelect}
+			onOpenChange={setOpen}
 		>
-			{suggestions.map((suggestion) => (
-				<AutoCompleteItem
-					key={suggestion}
-					value={suggestion}
-				/>
-			))}
+			<AutoCompleteInput loading={isFetching} />
+			<AutoCompleteContent>
+				{suggestions.map((suggestion) => (
+					<AutoCompleteItem
+						key={suggestion}
+						value={suggestion}
+					/>
+				))}
+			</AutoCompleteContent>
 		</AutoComplete>
 	);
 };

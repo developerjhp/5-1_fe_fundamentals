@@ -11,6 +11,7 @@ import type {
 } from '../../api/products.types';
 import { CATEGORY_LABELS, SORT_OPTION_LABELS } from '../../api/products.types';
 import { ProductAutoComplete } from '../product-autocomplete/product-autocomplete';
+import { DEFAULT_PRODUCTS_REQUEST } from './product-search-filter.constants';
 
 interface ProductSearchFilterProps {
 	value: ProductsRequest;
@@ -21,16 +22,8 @@ export const ProductSearchFilter = ({
 	value,
 	onChange,
 }: ProductSearchFilterProps) => {
-	const categories = value.categories ?? [];
-
 	const resetFilters = () => {
-		onChange({
-			categories: null,
-			keyword: null,
-			sort: null,
-			page: 1,
-			size: 20,
-		});
+		onChange(DEFAULT_PRODUCTS_REQUEST);
 	};
 
 	return (
@@ -40,26 +33,29 @@ export const ProductSearchFilter = ({
 					value={value.keyword ?? ''}
 					onChange={(keyword) => onChange({ keyword: keyword || null })}
 				/>
-				<HStack gap={4} wrap>
+				<HStack
+					gap={4}
+					wrap
+				>
 					<HStack gap={2}>
 						<span className="text-sm font-medium text-gray-500">카테고리</span>
 						<ToggleGroup
 							type="multiple"
-							value={categories}
+							value={value.categories ?? []}
 							onChange={(next) =>
 								onChange({
-									categories:
-										next.length > 0 ? (next as Category[]) : null,
+									categories: next.length > 0 ? (next as Category[]) : null,
 								})
 							}
 						>
-							{(Object.keys(CATEGORY_LABELS) as Category[]).map(
-								(category) => (
-									<ToggleGroupItem key={category} value={category}>
-										{CATEGORY_LABELS[category]}
-									</ToggleGroupItem>
-								),
-							)}
+							{Object.entries(CATEGORY_LABELS).map(([category, label]) => (
+								<ToggleGroupItem
+									key={category}
+									value={category}
+								>
+									{label}
+								</ToggleGroupItem>
+							))}
 						</ToggleGroup>
 					</HStack>
 					<div className="h-5 w-px bg-gray-200" />
@@ -72,13 +68,14 @@ export const ProductSearchFilter = ({
 								onChange({ sort: next as ProductsSortOption | null })
 							}
 						>
-							{(Object.keys(SORT_OPTION_LABELS) as ProductsSortOption[]).map(
-								(option) => (
-									<ToggleGroupItem key={option} value={option}>
-										{SORT_OPTION_LABELS[option]}
-									</ToggleGroupItem>
-								),
-							)}
+							{Object.entries(SORT_OPTION_LABELS).map(([option, label]) => (
+								<ToggleGroupItem
+									key={option}
+									value={option}
+								>
+									{label}
+								</ToggleGroupItem>
+							))}
 						</ToggleGroup>
 					</HStack>
 					<button
