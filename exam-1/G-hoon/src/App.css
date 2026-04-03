@@ -1,1 +1,6 @@
 /* 필요한 스타일을 자유롭게 작성하세요 */
+@import "tailwindcss";
+
+button {
+  cursor: pointer;
+}
