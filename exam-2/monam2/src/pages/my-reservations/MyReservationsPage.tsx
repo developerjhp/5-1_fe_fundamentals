@@ -1,5 +1,6 @@
 import { Link } from "wouter";
-import { Container, Layout } from "@/shared";
+
+import { Container, Layout } from "@/shared/layout";
 
 function MyReservationsPage() {
   return (

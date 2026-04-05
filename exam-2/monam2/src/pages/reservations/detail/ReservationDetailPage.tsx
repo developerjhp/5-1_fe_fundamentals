@@ -1,5 +1,6 @@
 import { Link, useParams } from "wouter";
-import { Container, Layout } from "@/shared";
+
+import { Container, Layout } from "@/shared/layout";
 
 function ReservationDetailPage() {
   const { id } = useParams<"/reservations/:id">();

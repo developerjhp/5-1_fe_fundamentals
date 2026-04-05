@@ -7,7 +7,7 @@ import {
   EQUIPMENT_FILTER_OPTIONS,
 } from "@/shared/constants";
 import { Flex } from "@/shared/components";
-import { Button, Checkbox, Select } from "@/shared";
+import { Button, Checkbox, Select } from "@/shared/ui";
 
 export default function TimelineFilter() {
   const { clearFilters, isActiveFilter } = useTimelineFilters();
