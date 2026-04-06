@@ -88,7 +88,7 @@ export function ReservationForm({
   const { mutate: createReservation, isPending } = useCreateReservation({
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: reservationsQueryKeys.byDate(data.reservation.date),
+        queryKey: reservationsQueryKeys.allByDate(data.reservation.date),
       });
       toast.success('예약이 생성되었습니다.');
       navigate(`/?date=${data.reservation.date}`);

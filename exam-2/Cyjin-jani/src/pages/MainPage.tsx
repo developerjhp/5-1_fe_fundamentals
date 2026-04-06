@@ -36,7 +36,7 @@ export function MainPage() {
               </div>
             )}
           >
-            <Suspense fallback={<p>로딩 중…</p>}>
+            <Suspense key={selectedDate} fallback={<p>로딩 중…</p>}>
               <TimelineTable date={selectedDate} />
             </Suspense>
           </ErrorBoundary>

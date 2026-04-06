@@ -5,7 +5,7 @@ import type { Reservation, ReservationsResponse } from '@/features/reservations/
 
 export function useReservations(date: string) {
   return useSuspenseQuery<ReservationsResponse, Error, Reservation[]>({
-    queryKey: reservationsQueryKeys.byDate(date),
+    queryKey: reservationsQueryKeys.allByDate(date),
     queryFn: () => getReservations(date),
     select: (response) => response.reservations,
   });
