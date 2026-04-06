@@ -1,4 +1,5 @@
 import { QueryErrorResetBoundary } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import {
   parseAsArrayOf,
   parseAsInteger,
@@ -58,8 +59,7 @@ function ErrorBody({ onReset }: { onReset: () => void }) {
 }
 
 function getToday() {
-  const d = new Date();
-  return d.toISOString().slice(0, 10);
+  return dayjs().format('YYYY-MM-DD');
 }
 
 const timelineParams = {

@@ -91,7 +91,7 @@ function EquipmentFilter({ value, onChange }: EquipmentFilterProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm font-medium text-slate-700">장비</span>
+      <span className="text-sm font-medium min-w-7 text-slate-700">장비</span>
       <Badge>
         {(Object.entries(EQUIPMENT_LABELS) as [Equipment, string][]).map(
           ([key, label]) => (
