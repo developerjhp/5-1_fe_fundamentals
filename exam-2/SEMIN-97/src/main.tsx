@@ -6,8 +6,18 @@ import { DevToolPanel } from './DevToolPanel'
 import { initializeMockStorage } from './mocks/storage'
 import './styles/reset.css'
 
-const queryClient = new QueryClient()
-
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error: any) => {
+        if (error?.status === 404) {
+          return false
+        }
+        return failureCount < 1
+      }
+    }
+  }
+})
 async function enableMocking() {
   const { worker } = await import('./mocks/browser')
   return worker.start({
