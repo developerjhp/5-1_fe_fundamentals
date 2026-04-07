@@ -23,6 +23,7 @@ export function ReservationDetailPage() {
 
   return (
     <AsyncBoundary
+      pendingFallback={<p>예약 상세를 불러오는 중입니다.</p>}
       errorFallback={({ error, reset }) => (
         <Switch fallback={<ErrorFallback error={error} reset={reset} />}>
           <Match when={isNotFound(error)}>

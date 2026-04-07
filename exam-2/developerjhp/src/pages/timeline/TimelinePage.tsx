@@ -1,4 +1,3 @@
-import { ErrorBoundaryGroup } from "@suspensive/react";
 import { SuspenseQueries } from "@suspensive/react-query-5";
 import { css } from "@emotion/react";
 import { useQueryStates } from "nuqs";
@@ -76,36 +75,34 @@ export function TimelinePage() {
           });
         }}
       />
-      <ErrorBoundaryGroup>
-        <AsyncBoundary>
-          <SuspenseQueries
-            queries={[roomsQueryOptions(), reservationsQueryOptions(date)]}
-          >
-            {([{ data: { rooms } }, { data: { reservations } }]) => (
-              <Timeline
-                rooms={filterRooms(rooms, minCapacity, selectedEquipment)}
-                reservations={reservations}
-                onReservationClick={(id) =>
-                  navigate(`/reservations/${id}`, {
-                    state: { from: timelinePath },
-                  })
-                }
-                onEmptySlotClick={(roomId, startTime) => {
-                  navigate(
-                    serializeCreateReservationSearch("/reservations/new", {
-                      date,
-                      minCapacity: minCapacity > 0 ? minCapacity : null,
-                      equipment: equipment || null,
-                      roomId,
-                      startTime,
-                    }),
-                  );
-                }}
-              />
-            )}
-          </SuspenseQueries>
-        </AsyncBoundary>
-      </ErrorBoundaryGroup>
+      <AsyncBoundary pendingFallback={<p>회의실 예약 현황을 불러오는 중입니다.</p>}>
+        <SuspenseQueries
+          queries={[roomsQueryOptions(), reservationsQueryOptions(date)]}
+        >
+          {([{ data: { rooms } }, { data: { reservations } }]) => (
+            <Timeline
+              rooms={filterRooms(rooms, minCapacity, selectedEquipment)}
+              reservations={reservations}
+              onReservationClick={(id) =>
+                navigate(`/reservations/${id}`, {
+                  state: { from: timelinePath },
+                })
+              }
+              onEmptySlotClick={(roomId, startTime) => {
+                navigate(
+                  serializeCreateReservationSearch("/reservations/new", {
+                    date,
+                    minCapacity: minCapacity > 0 ? minCapacity : null,
+                    equipment: equipment || null,
+                    roomId,
+                    startTime,
+                  }),
+                );
+              }}
+            />
+          )}
+        </SuspenseQueries>
+      </AsyncBoundary>
     </div>
   );
 }

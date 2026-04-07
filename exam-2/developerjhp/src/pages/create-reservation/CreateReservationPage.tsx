@@ -36,7 +36,7 @@ export function CreateReservationPage() {
       >
         예약 생성
       </h1>
-      <AsyncBoundary>
+      <AsyncBoundary pendingFallback={<p>예약 생성을 준비하는 중입니다.</p>}>
         <SuspenseQuery {...roomsQueryOptions()}>
           {({ data: { rooms } }) => {
             const initialValues = {

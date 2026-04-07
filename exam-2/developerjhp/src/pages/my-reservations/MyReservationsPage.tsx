@@ -11,7 +11,7 @@ export function MyReservationsPage() {
   return (
     <div>
       <h1 css={css`margin-bottom: ${spacing.lg};`}>내 예약</h1>
-      <AsyncBoundary>
+      <AsyncBoundary pendingFallback={<p>내 예약을 불러오는 중입니다.</p>}>
         <SuspenseQuery {...myReservationsQueryOptions()}>
           {({ data: { reservations } }) => <MyReservationsList reservations={reservations} />}
         </SuspenseQuery>
