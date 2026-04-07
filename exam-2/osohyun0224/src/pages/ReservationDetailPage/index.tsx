@@ -4,7 +4,7 @@ import { getRoomsQueryOptions, getReservationByIdQueryOptions, getReservationsQu
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { ErrorMessage } from '@/shared/components/ErrorMessage';
 import { ROUTES } from '@/pages/routes.constants';
-import { useCancelReservation } from './hooks/useCancelReservation';
+import { useCancelReservation } from '@/shared/hooks';
 import { ReservationDetail } from './components/ReservationDetail';
 import { MiniTimeline } from './components/MiniTimeline';
 
@@ -20,9 +20,8 @@ export function ReservationDetailPage() {
 
   const reservation = data?.reservation;
   const rooms = roomsData?.rooms ?? [];
-  const room = rooms.find((r) => r.id === reservation?.roomId);
+  const room = rooms.find((room) => room.id === reservation?.roomId);
 
-  // Fetch same-day reservations for mini timeline
   const { data: dayReservationsData } = useQuery({
     ...getReservationsQueryOptions(reservation?.date ?? ''),
     enabled: !!reservation?.date,
@@ -40,7 +39,7 @@ export function ReservationDetailPage() {
       await cancelMutation.mutateAsync(reservation.id);
       navigate(-1);
     } catch {
-      // error shown via cancelMutation.error
+      throw new Error('예약 취소에 실패했습니다.');
     }
   }
 

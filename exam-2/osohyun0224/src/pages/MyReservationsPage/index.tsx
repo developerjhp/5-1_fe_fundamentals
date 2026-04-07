@@ -1,17 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { cancelReservation } from '@/pages/remotes';
-import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
-import { ErrorMessage } from '@/shared/components/ErrorMessage';
 import { useQueries } from '@tanstack/react-query';
 import { getRoomsQueryOptions, getMyReservationsQueryOptions } from '@/shared/queries';
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
+import { ErrorMessage } from '@/shared/components/ErrorMessage';
+import { useCancelReservation } from '@/shared/hooks';
 import type { Reservation } from '@/types';
 import { MyReservationList } from './components/MyReservationList';
 
 export function MyReservationsPage() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [message, setMessage] = useState<{
     type: 'success' | 'error';
     text: string;
@@ -21,18 +19,7 @@ export function MyReservationsPage() {
     useQueries({
       queries: [getRoomsQueryOptions(), getMyReservationsQueryOptions()],
     });
-
-  const cancelMutation = useMutation({
-    mutationFn: cancelReservation,
-    onSuccess: () => {
-      setMessage({ type: 'success', text: '예약이 취소되었습니다.' });
-      queryClient.invalidateQueries({ queryKey: ['reservations'] });
-      queryClient.invalidateQueries({ queryKey: ['my-reservations'] });
-    },
-    onError: () => {
-      setMessage({ type: 'error', text: '취소에 실패했습니다.' });
-    },
-  });
+  const cancelMutation = useCancelReservation();
 
   const isLoading = roomsLoading || reservationsLoading;
   const error = roomsError || reservationsError;
@@ -63,7 +50,10 @@ export function MyReservationsPage() {
             disabled={cancelMutation.isPending}
             onClick={() => {
               if (window.confirm('정말 취소하시겠습니까?')) {
-                cancelMutation.mutate(reservation.id);
+                cancelMutation.mutate(reservation.id, {
+                  onSuccess: () => setMessage({ type: 'success', text: '예약이 취소되었습니다.' }),
+                  onError: () => setMessage({ type: 'error', text: '취소에 실패했습니다.' }),
+                });
               }
             }}
           >

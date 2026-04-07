@@ -16,9 +16,9 @@ function groupByDate(
   const sorted = [...reservations].sort((a, b) =>
     a.date < b.date ? -1 : a.date > b.date ? 1 : 0,
   );
-  for (const r of sorted) {
-    if (!groups[r.date]) groups[r.date] = [];
-    groups[r.date].push(r);
+  for (const reservation of sorted) {
+    if (!groups[reservation.date]) groups[reservation.date] = [];
+    groups[reservation.date].push(reservation);
   }
   return groups;
 }
@@ -44,7 +44,7 @@ export function MyReservationList({
   const dateKeys = Object.keys(grouped);
 
   function getRoomName(roomId: string): string {
-    return rooms.find((r) => r.id === roomId)?.name ?? roomId;
+    return rooms.find((room) => room.id === roomId)?.name ?? roomId;
   }
 
   if (reservations.length === 0) {
