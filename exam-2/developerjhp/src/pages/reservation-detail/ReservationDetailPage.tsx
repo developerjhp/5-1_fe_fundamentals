@@ -3,9 +3,13 @@ import type { ReactNode } from "react";
 import { useNavigate, useParams, useLocation } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { SuspenseQuery } from "@suspensive/react-query-5";
+import { Timeline } from "@/pages/timeline/Timeline";
 import { roomsQueryOptions } from "@/reservation/api/rooms";
 import { HttpError } from "@/reservation/api/client";
-import { reservationQueryOptions } from "@/reservation/api/reservations";
+import {
+  reservationQueryOptions,
+  reservationsQueryOptions,
+} from "@/reservation/api/reservations";
 import { useDeleteReservation } from "@/reservation/hooks/useDeleteReservation";
 import type { Reservation } from "@/reservation/types";
 import { color, radius, spacing } from "@/styles/tokens";
@@ -54,9 +58,18 @@ function ReservationDetail({
   const navigate = useNavigate();
   const deleteMutation = useDeleteReservation();
   const roomsQuery = useQuery(roomsQueryOptions());
+  const previewReservationsQuery = useQuery(
+    reservationsQueryOptions(reservation.date),
+  );
+  const currentRoom = roomsQuery.data?.rooms.find(
+    (room) => room.id === reservation.roomId,
+  );
   const roomName =
-    roomsQuery.data?.rooms.find((r) => r.id === reservation.roomId)?.name ??
-    reservation.roomId;
+    currentRoom?.name ?? reservation.roomId;
+  const roomReservations =
+    previewReservationsQuery.data?.reservations.filter(
+      (item) => item.roomId === reservation.roomId,
+    ) ?? [];
 
   const handleDelete = () => {
     if (!window.confirm("예약을 취소하시겠습니까?")) return;
@@ -78,6 +91,37 @@ function ReservationDetail({
         <DetailItem label="예약자" value={reservation.organizer} />
         <DetailItem label="참석 인원" value={`${reservation.attendees}명`} />
       </dl>
+
+      <section css={previewSectionStyle}>
+        <h2 css={previewTitleStyle}>해당 날짜 타임라인 미리보기</h2>
+        <Switch>
+          <Match when={roomsQuery.isPending || previewReservationsQuery.isPending}>
+            <p>타임라인 미리보기를 불러오는 중입니다.</p>
+          </Match>
+          <Match when={roomsQuery.isError || previewReservationsQuery.isError}>
+            <div css={errorBannerStyle}>
+              타임라인 미리보기를 불러올 수 없습니다.
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  void roomsQuery.refetch();
+                  void previewReservationsQuery.refetch();
+                }}
+                css={css`margin-left: ${spacing.sm};`}
+              >
+                다시 시도
+              </Button>
+            </div>
+          </Match>
+          <Match when={currentRoom != null}>
+            <Timeline
+              rooms={currentRoom ? [currentRoom] : []}
+              reservations={roomReservations}
+              highlightedReservationId={reservation.id}
+            />
+          </Match>
+        </Switch>
+      </section>
 
       <Switch>
         <Match when={isNotFound(deleteMutation.error)}>
@@ -145,6 +189,14 @@ const detailStyle = css`
   dt {
     font-weight: bold;
   }
+`;
+
+const previewSectionStyle = css`
+  margin-bottom: ${spacing.xl};
+`;
+
+const previewTitleStyle = css`
+  margin-bottom: ${spacing.md};
 `;
 
 const errorBannerStyle = css`

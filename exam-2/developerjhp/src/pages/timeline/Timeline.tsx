@@ -10,8 +10,9 @@ import { color, spacing, fontSize } from "@/styles/tokens";
 interface TimelineProps {
   rooms: Room[];
   reservations: Reservation[];
-  onReservationClick: (id: string) => void;
-  onEmptySlotClick: (roomId: string, startTime: string) => void;
+  onReservationClick?: (id: string) => void;
+  onEmptySlotClick?: (roomId: string, startTime: string) => void;
+  highlightedReservationId?: string;
 }
 
 export function Timeline({
@@ -19,6 +20,7 @@ export function Timeline({
   reservations,
   onReservationClick,
   onEmptySlotClick,
+  highlightedReservationId,
 }: TimelineProps) {
   if (rooms.length === 0) {
     return <EmptyState title="필터 조건에 맞는 회의실이 없습니다." />;
@@ -44,7 +46,12 @@ export function Timeline({
               room={room}
               slotMap={reservationsByRoom.get(room.id) ?? EMPTY_SLOT_MAP}
               onReservationClick={onReservationClick}
-              onEmptySlotClick={(startTime) => onEmptySlotClick(room.id, startTime)}
+              onEmptySlotClick={
+                onEmptySlotClick
+                  ? (startTime) => onEmptySlotClick(room.id, startTime)
+                  : undefined
+              }
+              highlightedReservationId={highlightedReservationId}
             />
           ))}
         </tbody>
@@ -86,8 +93,9 @@ function groupReservationsByRoom(
 interface RoomRowProps {
   room: Room;
   slotMap: Map<string, Reservation>;
-  onReservationClick: (id: string) => void;
-  onEmptySlotClick: (startTime: string) => void;
+  onReservationClick?: (id: string) => void;
+  onEmptySlotClick?: (startTime: string) => void;
+  highlightedReservationId?: string;
 }
 
 function RoomRow({
@@ -95,11 +103,18 @@ function RoomRow({
   slotMap,
   onReservationClick,
   onEmptySlotClick,
+  highlightedReservationId,
 }: RoomRowProps) {
   return (
     <tr>
       <td css={roomNameStyle}>{room.name}</td>
-      {buildRowCells({ room, slotMap, onReservationClick, onEmptySlotClick })}
+      {buildRowCells({
+        room,
+        slotMap,
+        onReservationClick,
+        onEmptySlotClick,
+        highlightedReservationId,
+      })}
     </tr>
   );
 }
@@ -109,6 +124,7 @@ function buildRowCells({
   slotMap,
   onReservationClick,
   onEmptySlotClick,
+  highlightedReservationId,
 }: RoomRowProps): ReactNode[] {
   const cells: ReactNode[] = [];
   let skipUntil = -1;
@@ -123,27 +139,48 @@ function buildRowCells({
       const endIdx = timeToSlotIndex(reservation.endTime);
       const span = endIdx - i;
       skipUntil = i + span;
+      const isHighlighted = reservation.id === highlightedReservationId;
 
-      cells.push(
+      if (onReservationClick) {
+        cells.push(
         <ClickableCell
           key={slotTime}
           colSpan={span}
-          css={reservedStyle}
+          css={[
+            reservedStyle,
+            interactiveReservedStyle,
+            isHighlighted && highlightedReservedStyle,
+          ]}
           ariaLabel={`${reservation.title}, ${reservation.startTime}부터 ${reservation.endTime}까지`}
           onActivate={() => onReservationClick(reservation.id)}
         >
-          {reservation.title}
-        </ClickableCell>,
-      );
+            {reservation.title}
+          </ClickableCell>,
+        );
+      } else {
+        cells.push(
+          <td
+            key={slotTime}
+            colSpan={span}
+            css={[reservedStyle, readOnlyCellStyle, isHighlighted && highlightedReservedStyle]}
+          >
+            {reservation.title}
+          </td>,
+        );
+      }
     } else {
-      cells.push(
+      if (onEmptySlotClick) {
+        cells.push(
         <ClickableCell
           key={slotTime}
-          css={emptyStyle}
+          css={[emptyStyle, interactiveEmptyStyle]}
           ariaLabel={`${room.name} ${slotTime} 빈 시간대, 클릭하여 예약`}
           onActivate={() => onEmptySlotClick(slotTime)}
         />,
-      );
+        );
+      } else {
+        cells.push(<td key={slotTime} css={[emptyStyle, readOnlyCellStyle]} />);
+      }
     }
   }
 
@@ -174,12 +211,22 @@ const tableStyle = css`
 const reservedStyle = css`
   background: ${color.primary};
   color: white;
-  cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: bold;
+`;
 
+const highlightedReservedStyle = css`
+  box-shadow: inset 0 0 0 3px ${color.primaryFocus};
+`;
+
+const readOnlyCellStyle = css`
+  cursor: default;
+`;
+
+const interactiveReservedStyle = css`
+  cursor: pointer;
   &:hover,
   &:focus-visible {
     background: ${color.primaryHover};
@@ -189,7 +236,12 @@ const reservedStyle = css`
 `;
 
 const emptyStyle = css`
+  background: transparent;
+`;
+
+const interactiveEmptyStyle = css`
   cursor: pointer;
+
   &:hover,
   &:focus-visible {
     background: ${color.bgEmptyHover};
