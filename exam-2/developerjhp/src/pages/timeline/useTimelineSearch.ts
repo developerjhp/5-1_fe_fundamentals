@@ -7,7 +7,7 @@ import {
   timelineSearchParsers,
 } from "@/reservation/searchParams";
 import type { Equipment } from "@/reservation/types";
-import { todayString } from "@/reservation/utils/reservationTime";
+import { todayString } from "@/reservation/utils/time";
 
 export function useTimelineSearch() {
   const [timelineSearch, setTimelineSearch] = useQueryStates(

@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router";
 import { Layout } from "@/app/Layout";
-import { NotFoundPage } from "@/app/NotFoundPage";
+import { NotFoundPage } from "@/pages/not-found/NotFoundPage";
 import { CreateReservationPage } from "@/pages/create-reservation/CreateReservationPage";
 import { MyReservationsPage } from "@/pages/my-reservations/MyReservationsPage";
 import { ReservationDetailPage } from "@/pages/reservation-detail/ReservationDetailPage";
