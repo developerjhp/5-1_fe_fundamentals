@@ -2,7 +2,6 @@ import { css } from "@emotion/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ReactNode } from "react";
 import { useForm } from "react-hook-form";
-import { TIME_SLOTS } from "@/reservation/constants";
 import { useAvailableTimeSlots } from "@/reservation/hooks/useAvailableTimeSlots";
 import {
   createReservationFormSchema,
@@ -48,9 +47,9 @@ export function ReservationForm({
   } = useForm<ReservationFormInputValues, undefined, ReservationFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      roomId: initialValues.roomId || "",
-      date: initialValues.date || "",
-      startTime: TIME_SLOTS.includes(initialValues.startTime) ? initialValues.startTime : "",
+      roomId: initialValues.roomId,
+      date: initialValues.date,
+      startTime: initialValues.startTime,
       endTime: "",
       title: "",
       organizer: "",
@@ -63,11 +62,17 @@ export function ReservationForm({
   const startTime = watch("startTime");
   const selectedRoom = rooms.find((room) => room.id === roomId);
   const availability = useAvailableTimeSlots(roomId, date);
-  const availableEndTimes = startTime
-    ? availability.getAvailableEndTimes(startTime)
-    : [];
-  const canSelectStart = availability.status === "ready";
-  const canSelectEnd = canSelectStart && !!startTime && availableEndTimes.length > 0;
+  const hasSelectedStartTime = startTime.length > 0;
+  const availableEndTimes =
+    availability.status === "ready" && hasSelectedStartTime
+      ? availability.getAvailableEndTimes(startTime)
+      : [];
+  const hasAvailableEndTimes = availableEndTimes.length > 0;
+  const canSelectStartTime = availability.status === "ready";
+  const canSelectEndTime =
+    availability.status === "ready" &&
+    hasSelectedStartTime &&
+    hasAvailableEndTimes;
 
   const clearTimeRange = () => {
     resetField("startTime", { defaultValue: "" });
@@ -78,7 +83,7 @@ export function ReservationForm({
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <SubmitErrorBanner error={submitError} />
 
-      <FormField label="회의실" error={errors.roomId?.message}>
+      <FormField htmlFor="roomId" label="회의실" error={errors.roomId?.message}>
         <select id="roomId" {...register("roomId", { onChange: clearTimeRange })}>
           <option value="">선택하세요</option>
           {rooms.map((room) => (
@@ -89,20 +94,20 @@ export function ReservationForm({
         </select>
       </FormField>
 
-      <FormField label="날짜" error={errors.date?.message}>
+      <FormField htmlFor="date" label="날짜" error={errors.date?.message}>
         <input id="date" type="date" {...register("date", { onChange: clearTimeRange })} />
       </FormField>
 
-      <FormField label="시작 시간" error={errors.startTime?.message}>
+      <FormField htmlFor="startTime" label="시작 시간" error={errors.startTime?.message}>
         <select
           id="startTime"
           {...register("startTime", {
             onChange: () => resetField("endTime", { defaultValue: "" }),
           })}
-          disabled={!canSelectStart}
+          disabled={!canSelectStartTime}
         >
           <option value="">선택하세요</option>
-          {canSelectStart && availability.availableStartTimes.map((slot) => (
+          {canSelectStartTime && availability.availableStartTimes.map((slot) => (
             <option key={slot} value={slot}>{slot}</option>
           ))}
         </select>
@@ -122,15 +127,15 @@ export function ReservationForm({
         </Switch>
       </FormField>
 
-      <FormField label="종료 시간" error={errors.endTime?.message}>
-        <select id="endTime" {...register("endTime")} disabled={!canSelectEnd}>
+      <FormField htmlFor="endTime" label="종료 시간" error={errors.endTime?.message}>
+        <select id="endTime" {...register("endTime")} disabled={!canSelectEndTime}>
           <option value="">선택하세요</option>
           {availableEndTimes.map((slot) => (
             <option key={slot} value={slot}>{slot}</option>
           ))}
         </select>
         <Switch>
-          <Match when={!startTime}>
+          <Match when={!hasSelectedStartTime}>
             <HelperText>시작 시간을 먼저 선택하세요.</HelperText>
           </Match>
           <Match when={availability.status === "loading"}>
@@ -139,26 +144,29 @@ export function ReservationForm({
           <Match when={availability.status === "error"}>
             <ErrorText>예약 현황을 불러올 수 없습니다.</ErrorText>
           </Match>
-          <Match when={availableEndTimes.length === 0}>
+          <Match when={!hasAvailableEndTimes}>
             <HelperText>예약 가능한 종료 시간이 없습니다.</HelperText>
           </Match>
         </Switch>
       </FormField>
 
-      <FormField label="회의 제목" error={errors.title?.message}>
+      <FormField htmlFor="title" label="회의 제목" error={errors.title?.message}>
         <input id="title" type="text" {...register("title")} />
       </FormField>
 
-      <FormField label="예약자명" error={errors.organizer?.message}>
+      <FormField htmlFor="organizer" label="예약자명" error={errors.organizer?.message}>
         <input id="organizer" type="text" {...register("organizer")} />
       </FormField>
 
       <FormField
+        htmlFor="attendees"
         label="참석 인원"
         error={errors.attendees?.message}
-        guide={selectedRoom
-          ? `최대 ${selectedRoom.capacity}명까지 입력할 수 있습니다.`
-          : "회의실 선택 후 최대 인원을 확인하세요."}
+        guide={
+          selectedRoom
+            ? `최대 ${selectedRoom.capacity}명까지 입력할 수 있습니다.`
+            : "회의실 선택 후 최대 인원을 확인하세요."
+        }
       >
         <input
           id="attendees"
@@ -169,7 +177,7 @@ export function ReservationForm({
         />
       </FormField>
 
-      <Button type="submit" disabled={isPending || !canSelectStart}>
+      <Button type="submit" disabled={isPending || !canSelectStartTime}>
         {isPending ? "예약 중..." : "예약 생성"}
       </Button>
     </form>
@@ -177,16 +185,23 @@ export function ReservationForm({
 }
 
 interface FormFieldProps {
+  htmlFor: string;
   label: string;
   error?: string;
   guide?: string;
   children: ReactNode;
 }
 
-function FormField({ label, error, guide, children }: FormFieldProps) {
+function FormField({
+  htmlFor,
+  label,
+  error,
+  guide,
+  children,
+}: FormFieldProps) {
   return (
     <div css={fieldStyle}>
-      <label>{label}</label>
+      <label htmlFor={htmlFor}>{label}</label>
       {children}
       {guide && <HelperText>{guide}</HelperText>}
       {error && <ErrorText>{error}</ErrorText>}

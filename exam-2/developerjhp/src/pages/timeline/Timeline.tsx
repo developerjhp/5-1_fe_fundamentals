@@ -7,12 +7,44 @@ import { ClickableCell } from "@/components/ClickableCell";
 import { EmptyState } from "@/components/EmptyState";
 import { color, spacing, fontSize } from "@/styles/tokens";
 
-interface TimelineProps {
+interface BaseTimelineProps {
   rooms: Room[];
   reservations: Reservation[];
-  onReservationClick?: (id: string) => void;
-  onEmptySlotClick?: (roomId: string, startTime: string) => void;
+}
+
+interface InteractiveTimelineProps extends BaseTimelineProps {
+  onReservationClick: (id: string) => void;
+  onEmptySlotClick: (roomId: string, startTime: string) => void;
+}
+
+interface PreviewTimelineProps extends BaseTimelineProps {
   highlightedReservationId?: string;
+}
+
+interface TimelineTableProps extends BaseTimelineProps {
+  highlightedReservationId?: string;
+  renderReservedCell: (props: ReservedCellProps) => ReactNode;
+  renderEmptyCell: (props: EmptyCellProps) => ReactNode;
+}
+
+interface RoomRowProps extends Pick<
+  TimelineTableProps,
+  "highlightedReservationId" | "renderReservedCell" | "renderEmptyCell"
+> {
+  room: Room;
+  slotMap: Map<string, Reservation>;
+}
+
+interface ReservedCellProps {
+  slotTime: string;
+  reservation: Reservation;
+  colSpan: number;
+  isHighlighted: boolean;
+}
+
+interface EmptyCellProps {
+  room: Room;
+  slotTime: string;
 }
 
 export function Timeline({
@@ -20,8 +52,76 @@ export function Timeline({
   reservations,
   onReservationClick,
   onEmptySlotClick,
+}: InteractiveTimelineProps) {
+  return (
+    <TimelineTable
+      rooms={rooms}
+      reservations={reservations}
+      renderReservedCell={({ slotTime, reservation, colSpan, isHighlighted }) => (
+        <ClickableCell
+          key={slotTime}
+          colSpan={colSpan}
+          css={[
+            reservedStyle,
+            interactiveReservedStyle,
+            isHighlighted && highlightedReservedStyle,
+          ]}
+          ariaLabel={`${reservation.title}, ${reservation.startTime}부터 ${reservation.endTime}까지`}
+          onActivate={() => onReservationClick(reservation.id)}
+        >
+          {reservation.title}
+        </ClickableCell>
+      )}
+      renderEmptyCell={({ room, slotTime }) => (
+        <ClickableCell
+          key={slotTime}
+          css={[emptyStyle, interactiveEmptyStyle]}
+          ariaLabel={`${room.name} ${slotTime} 빈 시간대, 클릭하여 예약`}
+          onActivate={() => onEmptySlotClick(room.id, slotTime)}
+        />
+      )}
+    />
+  );
+}
+
+export function TimelinePreview({
+  rooms,
+  reservations,
   highlightedReservationId,
-}: TimelineProps) {
+}: PreviewTimelineProps) {
+  return (
+    <TimelineTable
+      rooms={rooms}
+      reservations={reservations}
+      highlightedReservationId={highlightedReservationId}
+      renderReservedCell={({ slotTime, reservation, colSpan, isHighlighted }) => (
+        <td
+          key={slotTime}
+          colSpan={colSpan}
+          css={[
+            reservedStyle,
+            readOnlyCellStyle,
+            isHighlighted && highlightedReservedStyle,
+          ]}
+        >
+          {reservation.title}
+        </td>
+      )}
+      renderEmptyCell={({ slotTime }) => (
+        <td key={slotTime} css={[emptyStyle, readOnlyCellStyle]} />
+      )}
+    />
+  );
+}
+
+function TimelineTable({
+  rooms,
+  reservations,
+  highlightedReservationId,
+  renderReservedCell,
+  renderEmptyCell,
+}: TimelineTableProps) {
+
   if (rooms.length === 0) {
     return <EmptyState title="필터 조건에 맞는 회의실이 없습니다." />;
   }
@@ -45,13 +145,9 @@ export function Timeline({
               key={room.id}
               room={room}
               slotMap={reservationsByRoom.get(room.id) ?? EMPTY_SLOT_MAP}
-              onReservationClick={onReservationClick}
-              onEmptySlotClick={
-                onEmptySlotClick
-                  ? (startTime) => onEmptySlotClick(room.id, startTime)
-                  : undefined
-              }
               highlightedReservationId={highlightedReservationId}
+              renderReservedCell={renderReservedCell}
+              renderEmptyCell={renderEmptyCell}
             />
           ))}
         </tbody>
@@ -90,20 +186,12 @@ function groupReservationsByRoom(
   return grouped;
 }
 
-interface RoomRowProps {
-  room: Room;
-  slotMap: Map<string, Reservation>;
-  onReservationClick?: (id: string) => void;
-  onEmptySlotClick?: (startTime: string) => void;
-  highlightedReservationId?: string;
-}
-
 function RoomRow({
   room,
   slotMap,
-  onReservationClick,
-  onEmptySlotClick,
   highlightedReservationId,
+  renderReservedCell,
+  renderEmptyCell,
 }: RoomRowProps) {
   return (
     <tr>
@@ -111,9 +199,9 @@ function RoomRow({
       {buildRowCells({
         room,
         slotMap,
-        onReservationClick,
-        onEmptySlotClick,
         highlightedReservationId,
+        renderReservedCell,
+        renderEmptyCell,
       })}
     </tr>
   );
@@ -122,9 +210,9 @@ function RoomRow({
 function buildRowCells({
   room,
   slotMap,
-  onReservationClick,
-  onEmptySlotClick,
   highlightedReservationId,
+  renderReservedCell,
+  renderEmptyCell,
 }: RoomRowProps): ReactNode[] {
   const cells: ReactNode[] = [];
   let skipUntil = -1;
@@ -139,48 +227,21 @@ function buildRowCells({
       const endIdx = timeToSlotIndex(reservation.endTime);
       const span = endIdx - i;
       skipUntil = i + span;
-      const isHighlighted = reservation.id === highlightedReservationId;
-
-      if (onReservationClick) {
-        cells.push(
-        <ClickableCell
-          key={slotTime}
-          colSpan={span}
-          css={[
-            reservedStyle,
-            interactiveReservedStyle,
-            isHighlighted && highlightedReservedStyle,
-          ]}
-          ariaLabel={`${reservation.title}, ${reservation.startTime}부터 ${reservation.endTime}까지`}
-          onActivate={() => onReservationClick(reservation.id)}
-        >
-            {reservation.title}
-          </ClickableCell>,
-        );
-      } else {
-        cells.push(
-          <td
-            key={slotTime}
-            colSpan={span}
-            css={[reservedStyle, readOnlyCellStyle, isHighlighted && highlightedReservedStyle]}
-          >
-            {reservation.title}
-          </td>,
-        );
-      }
+      cells.push(
+        renderReservedCell({
+          slotTime,
+          reservation,
+          colSpan: span,
+          isHighlighted: reservation.id === highlightedReservationId,
+        }),
+      );
     } else {
-      if (onEmptySlotClick) {
-        cells.push(
-        <ClickableCell
-          key={slotTime}
-          css={[emptyStyle, interactiveEmptyStyle]}
-          ariaLabel={`${room.name} ${slotTime} 빈 시간대, 클릭하여 예약`}
-          onActivate={() => onEmptySlotClick(slotTime)}
-        />,
-        );
-      } else {
-        cells.push(<td key={slotTime} css={[emptyStyle, readOnlyCellStyle]} />);
-      }
+      cells.push(
+        renderEmptyCell({
+          slotTime,
+          room,
+        }),
+      );
     }
   }
 

@@ -8,9 +8,25 @@ import {
 
 export type AvailabilityStatus = "idle" | "loading" | "error" | "ready" | "empty";
 
-const emptyAvailableTimeSlots = () => [] as string[];
+const EMPTY_TIME_SLOTS: string[] = [];
 
-export function useAvailableTimeSlots(roomId: string, date: string) {
+type UnavailableTimeSlots = {
+  status: Exclude<AvailabilityStatus, "ready">;
+  availableStartTimes: string[];
+};
+
+type ReadyTimeSlots = {
+  status: "ready";
+  availableStartTimes: string[];
+  getAvailableEndTimes: (startTime: string) => string[];
+};
+
+export type AvailableTimeSlots = UnavailableTimeSlots | ReadyTimeSlots;
+
+export function useAvailableTimeSlots(
+  roomId: string,
+  date: string,
+): AvailableTimeSlots {
   const hasContext = Boolean(date && roomId);
 
   const reservationsQuery = useQuery({
@@ -21,35 +37,34 @@ export function useAvailableTimeSlots(roomId: string, date: string) {
   if (!hasContext) {
     return {
       status: "idle" as const,
-      availableStartTimes: [],
-      getAvailableEndTimes: emptyAvailableTimeSlots,
+      availableStartTimes: EMPTY_TIME_SLOTS,
     };
   }
 
   if (reservationsQuery.isError) {
     return {
       status: "error" as const,
-      availableStartTimes: [],
-      getAvailableEndTimes: emptyAvailableTimeSlots,
+      availableStartTimes: EMPTY_TIME_SLOTS,
     };
   }
 
   if (reservationsQuery.isPending || !reservationsQuery.data) {
     return {
       status: "loading" as const,
-      availableStartTimes: [],
-      getAvailableEndTimes: emptyAvailableTimeSlots,
+      availableStartTimes: EMPTY_TIME_SLOTS,
     };
   }
 
-  const roomReservations = getRoomReservations(reservationsQuery.data.reservations, roomId);
+  const roomReservations = getRoomReservations(
+    reservationsQuery.data.reservations,
+    roomId,
+  );
   const availableStartTimes = getAvailableStartTimes(roomReservations);
 
   if (availableStartTimes.length === 0) {
     return {
       status: "empty" as const,
-      availableStartTimes: [],
-      getAvailableEndTimes: emptyAvailableTimeSlots,
+      availableStartTimes: EMPTY_TIME_SLOTS,
     };
   }
 
