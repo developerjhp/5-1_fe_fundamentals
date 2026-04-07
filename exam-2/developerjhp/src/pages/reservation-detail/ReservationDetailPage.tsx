@@ -1,62 +1,74 @@
 import { css } from "@emotion/react";
 import { useNavigate, useParams, useLocation } from "react-router";
 import { useQuery } from "@tanstack/react-query";
+import { ErrorBoundary, Suspense } from "@suspensive/react";
+import { SuspenseQuery } from "@suspensive/react-query-5";
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { roomsQueryOptions } from "@/reservation/api/rooms";
 import { HttpError } from "@/reservation/api/client";
 import { reservationQueryOptions } from "@/reservation/api/reservations";
 import { useDeleteReservation } from "@/reservation/hooks/useDeleteReservation";
+import type { Reservation } from "@/reservation/types";
 import { color, spacing, radius } from "@/styles/tokens";
+import { ErrorFallback } from "@/components/ErrorFallback";
 
 export function ReservationDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { data, isLoading, error, refetch } = useQuery(
-    reservationQueryOptions(id!),
+  const returnTo = parseReturnTo(location.state);
+
+  return (
+    <QueryErrorResetBoundary>
+      {({ reset }) => (
+        <ErrorBoundary
+          onReset={reset}
+          fallback={({ error, reset: resetBoundary }) => {
+            if (error instanceof HttpError && error.status === 404) {
+              return (
+                <div css={centerStyle}>
+                  <h2>존재하지 않는 예약입니다</h2>
+                  <p>예약이 삭제되었거나 잘못된 주소입니다.</p>
+                  <button
+                    type="button"
+                    onClick={() => navigate(returnTo)}
+                    css={btnStyle}
+                  >
+                    돌아가기
+                  </button>
+                </div>
+              );
+            }
+
+            return <ErrorFallback error={error} reset={resetBoundary} />;
+          }}
+        >
+          <Suspense fallback={<p>로딩 중...</p>}>
+            <SuspenseQuery {...reservationQueryOptions(id!)}>
+              {({ data: { reservation } }) => (
+                <ReservationDetail
+                  reservation={reservation}
+                  returnTo={returnTo}
+                />
+              )}
+            </SuspenseQuery>
+          </Suspense>
+        </ErrorBoundary>
+      )}
+    </QueryErrorResetBoundary>
   );
+}
+
+function ReservationDetail({
+  reservation,
+  returnTo,
+}: {
+  reservation: Reservation;
+  returnTo: string;
+}) {
+  const navigate = useNavigate();
   const deleteMutation = useDeleteReservation();
-
-  const state = location.state;
-  const returnTo =
-    state != null &&
-    typeof state === "object" &&
-    "from" in state &&
-    typeof state.from === "string"
-      ? state.from
-      : "/";
   const roomsQuery = useQuery(roomsQueryOptions());
-
-  if (isLoading) {
-    return <p>로딩 중...</p>;
-  }
-
-  if (error instanceof HttpError && error.status === 404) {
-    return (
-      <div css={centerStyle}>
-        <h2>존재하지 않는 예약입니다</h2>
-        <p>예약이 삭제되었거나 잘못된 주소입니다.</p>
-        <button type="button" onClick={() => navigate(returnTo)} css={btnStyle}>
-          타임라인으로 돌아가기
-        </button>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div css={centerStyle}>
-        <h2>오류가 발생했습니다</h2>
-        <p>{error.message}</p>
-        <button type="button" onClick={() => refetch()} css={btnStyle}>
-          다시 시도
-        </button>
-      </div>
-    );
-  }
-
-  if (!data) return null;
-
-  const reservation = data.reservation;
   const roomName =
     roomsQuery.data?.rooms.find((r) => r.id === reservation.roomId)?.name ??
     reservation.roomId;
@@ -66,9 +78,7 @@ export function ReservationDetailPage() {
 
     deleteMutation.mutate(
       { id: reservation.id, date: reservation.date },
-      {
-        onSuccess: () => navigate(returnTo),
-      },
+      { onSuccess: () => navigate(returnTo) },
     );
   };
 
@@ -114,6 +124,18 @@ export function ReservationDetailPage() {
       </button>
     </div>
   );
+}
+
+function parseReturnTo(state: unknown): string {
+  if (
+    state != null &&
+    typeof state === "object" &&
+    "from" in state &&
+    typeof state.from === "string"
+  ) {
+    return state.from;
+  }
+  return "/";
 }
 
 const detailStyle = css`

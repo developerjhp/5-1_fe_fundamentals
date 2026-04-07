@@ -56,3 +56,23 @@ export interface ConflictError {
     endTime: string;
   };
 }
+
+export function isConflictErrorBody(body: unknown): body is ConflictError {
+  return (
+    body != null &&
+    typeof body === 'object' &&
+    'error' in body &&
+    (body as ConflictError).error === 'Conflict' &&
+    'conflictWith' in body
+  );
+}
+
+export interface SubmitError {
+  type: 'conflict' | 'server';
+  message: string;
+  conflict?: {
+    title: string;
+    startTime: string;
+    endTime: string;
+  };
+}

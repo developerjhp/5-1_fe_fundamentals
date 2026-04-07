@@ -8,20 +8,12 @@ import {
   type ReservationFormInputValues,
   type ReservationFormValues,
 } from "@/reservation/schemas/reservation";
-import type { CreateReservationRequest, Room } from "@/reservation/types";
+import type {
+  CreateReservationRequest,
+  Room,
+  SubmitError,
+} from "@/reservation/types";
 import { color, spacing, fontSize, radius } from "@/styles/tokens";
-
-interface ConflictInfo {
-  title: string;
-  startTime: string;
-  endTime: string;
-}
-
-export interface SubmitError {
-  type: "conflict" | "server";
-  message: string;
-  conflict?: ConflictInfo;
-}
 
 interface ReservationFormProps {
   rooms: Room[];
