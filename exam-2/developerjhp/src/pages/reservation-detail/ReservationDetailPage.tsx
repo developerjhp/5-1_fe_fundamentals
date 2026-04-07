@@ -1,14 +1,13 @@
 import { css } from "@emotion/react";
 import type { ReactNode } from "react";
 import { useNavigate, useParams, useLocation } from "react-router";
-import { useQuery } from "@tanstack/react-query";
 import { SuspenseQuery } from "@suspensive/react-query-5";
 import { ReservationTimelinePreview } from "@/pages/reservation-detail/ReservationTimelinePreview";
 import { roomsQueryOptions } from "@/reservation/api/rooms";
 import { HttpError } from "@/reservation/api/client";
 import { reservationQueryOptions } from "@/reservation/api/reservations";
 import { useDeleteReservation } from "@/reservation/hooks/useDeleteReservation";
-import type { Reservation } from "@/reservation/types";
+import type { Reservation, Room } from "@/reservation/types";
 import { color, radius, spacing } from "@/styles/tokens";
 import { AsyncBoundary } from "@/components/AsyncBoundary";
 import { Button } from "@/components/Button";
@@ -38,7 +37,20 @@ export function ReservationDetailPage() {
     >
       <SuspenseQuery {...reservationQueryOptions(id!)}>
         {({ data: { reservation } }) => (
-          <ReservationDetail reservation={reservation} returnTo={returnTo} />
+          <SuspenseQuery {...roomsQueryOptions()}>
+            {({ data: { rooms } }) => {
+              const room = rooms.find((item) => item.id === reservation.roomId) ?? null;
+
+              return (
+                <ReservationDetail
+                  reservation={reservation}
+                  returnTo={returnTo}
+                  roomName={room?.name ?? reservation.roomId}
+                  room={room}
+                />
+              );
+            }}
+          </SuspenseQuery>
         )}
       </SuspenseQuery>
     </AsyncBoundary>
@@ -48,17 +60,16 @@ export function ReservationDetailPage() {
 function ReservationDetail({
   reservation,
   returnTo,
+  roomName,
+  room,
 }: {
   reservation: Reservation;
   returnTo: string;
+  roomName: string;
+  room: Room | null;
 }) {
   const navigate = useNavigate();
   const deleteMutation = useDeleteReservation();
-  const roomsQuery = useQuery(roomsQueryOptions());
-  const currentRoom = roomsQuery.data?.rooms.find(
-    (room) => room.id === reservation.roomId,
-  );
-  const roomName = currentRoom?.name ?? reservation.roomId;
 
   const handleDelete = () => {
     if (!window.confirm("예약을 취소하시겠습니까?")) return;
@@ -81,7 +92,7 @@ function ReservationDetail({
         <DetailItem label="참석 인원" value={`${reservation.attendees}명`} />
       </dl>
 
-      <ReservationTimelinePreview reservation={reservation} />
+      <ReservationTimelinePreview reservation={reservation} room={room} />
 
       <Switch>
         <Match when={isNotFound(deleteMutation.error)}>
