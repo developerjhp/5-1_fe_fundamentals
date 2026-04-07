@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import {
   getRooms,
   getReservations,
@@ -10,28 +10,28 @@ import {
 import type { CreateReservationRequest } from '@/types/reservation'
 
 export function useRooms() {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ['rooms'],
     queryFn: getRooms,
   })
 }
 
 export function useReservations(date: string) {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ['reservations', date],
     queryFn: () => getReservations(date),
   })
 }
 
 export function useReservation(id: string) {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ['reservation', id],
     queryFn: () => getReservation(id),
   })
 }
 
 export function useMyReservations() {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ['my-reservations'],
     queryFn: getMyReservations,
   })
