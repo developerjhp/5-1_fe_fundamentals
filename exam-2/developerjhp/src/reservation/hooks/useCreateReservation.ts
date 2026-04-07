@@ -15,30 +15,23 @@ export function useCreateReservation() {
     mutationFn: (data: CreateReservationRequest) => createReservation(data),
     onSuccess: (data) => {
       const reservation = data.reservation;
+      const addReservation = (old: ReservationsResponse | undefined) => ({
+        reservations: [
+          ...(old?.reservations ?? []).filter(
+            (item) => item.id !== reservation.id,
+          ),
+          reservation,
+        ],
+      });
 
-      queryClient.setQueryData<ReservationsResponse>(
+      const targetKeys = [
         reservationKeys.list(reservation.date),
-        (old) => ({
-          reservations: [
-            ...(old?.reservations ?? []).filter(
-              (item) => item.id !== reservation.id,
-            ),
-            reservation,
-          ],
-        }),
-      );
-
-      queryClient.setQueryData<ReservationsResponse>(
         reservationKeys.my(),
-        (old) => ({
-          reservations: [
-            ...(old?.reservations ?? []).filter(
-              (item) => item.id !== reservation.id,
-            ),
-            reservation,
-          ],
-        }),
-      );
+      ];
+
+      for (const key of targetKeys) {
+        queryClient.setQueryData<ReservationsResponse>(key, addReservation);
+      }
 
       queryClient.invalidateQueries({ queryKey: reservationKeys.all });
     },

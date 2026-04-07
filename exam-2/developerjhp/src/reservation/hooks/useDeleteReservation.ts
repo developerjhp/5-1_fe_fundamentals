@@ -3,32 +3,25 @@ import {
   deleteReservation,
   reservationKeys,
 } from "@/reservation/api/reservations";
-import type { Reservation, ReservationsResponse } from "@/reservation/types";
+import type { ReservationsResponse } from "@/reservation/types";
 
 export function useDeleteReservation() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ id }: { id: string; date: string }) => deleteReservation(id),
-    onSuccess: (_data, variables) => {
-      const { id, date } = variables;
-
+    onSuccess: (_data, { id, date }) => {
       const removeById = (old: ReservationsResponse | undefined) => ({
-        reservations: (old?.reservations ?? []).filter(
-          (r: Reservation) => r.id !== id,
-        ),
+        reservations: (old?.reservations ?? []).filter((r) => r.id !== id),
       });
 
-      queryClient.setQueryData<ReservationsResponse>(
-        reservationKeys.list(date),
-        removeById,
-      );
-      queryClient.setQueryData<ReservationsResponse>(
-        reservationKeys.my(),
-        removeById,
-      );
-      queryClient.removeQueries({ queryKey: reservationKeys.detail(id) });
+      const targetKeys = [reservationKeys.list(date), reservationKeys.my()];
 
+      for (const key of targetKeys) {
+        queryClient.setQueryData<ReservationsResponse>(key, removeById);
+      }
+
+      queryClient.removeQueries({ queryKey: reservationKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: reservationKeys.all });
     },
   });
