@@ -14,7 +14,11 @@ interface RoomFilterRootProps {
 }
 
 function RoomFilterRoot({ children }: RoomFilterRootProps) {
-  return <div className="flex flex-wrap items-center gap-4">{children}</div>;
+  return (
+    <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4">
+      {children}
+    </div>
+  );
 }
 
 interface FloorSelectProps {
