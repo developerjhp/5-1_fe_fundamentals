@@ -1,10 +1,11 @@
-import { css } from '@emotion/react';
+import { css } from "@emotion/react";
 import {
   ALL_EQUIPMENT,
   EQUIPMENT_LABELS,
   MIN_CAPACITY_OPTIONS,
-} from '@/reservation/constants';
-import type { Equipment } from '@/reservation/types';
+} from "@/reservation/constants";
+import type { Equipment } from "@/reservation/types";
+import { spacing } from "@/styles/tokens";
 
 interface RoomFilterProps {
   minCapacity: number;
@@ -31,10 +32,10 @@ export function RoomFilter({
     <div
       css={css`
         display: flex;
-        gap: 16px;
+        gap: ${spacing.lg};
         align-items: center;
         flex-wrap: wrap;
-        margin-bottom: 12px;
+        margin-bottom: ${spacing.md};
       `}
     >
       <label>
@@ -43,7 +44,7 @@ export function RoomFilter({
           value={minCapacity}
           onChange={(e) => onMinCapacityChange(Number(e.target.value))}
           css={css`
-            margin-left: 4px;
+            margin-left: ${spacing.xs};
           `}
         >
           {MIN_CAPACITY_OPTIONS.map((option) => (
@@ -56,7 +57,7 @@ export function RoomFilter({
       <div
         css={css`
           display: flex;
-          gap: 8px;
+          gap: ${spacing.sm};
           align-items: center;
         `}
       >

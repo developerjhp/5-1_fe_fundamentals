@@ -1,9 +1,12 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createReservation, reservationKeys } from '@/reservation/api/reservations';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  createReservation,
+  reservationKeys,
+} from "@/reservation/api/reservations";
 import type {
   CreateReservationRequest,
   ReservationsResponse,
-} from '@/reservation/types';
+} from "@/reservation/types";
 
 export function useCreateReservation() {
   const queryClient = useQueryClient();
@@ -17,7 +20,9 @@ export function useCreateReservation() {
         reservationKeys.list(reservation.date),
         (old) => ({
           reservations: [
-            ...(old?.reservations ?? []).filter((item) => item.id !== reservation.id),
+            ...(old?.reservations ?? []).filter(
+              (item) => item.id !== reservation.id,
+            ),
             reservation,
           ],
         }),
@@ -27,11 +32,15 @@ export function useCreateReservation() {
         reservationKeys.my(),
         (old) => ({
           reservations: [
-            ...(old?.reservations ?? []).filter((item) => item.id !== reservation.id),
+            ...(old?.reservations ?? []).filter(
+              (item) => item.id !== reservation.id,
+            ),
             reservation,
           ],
         }),
       );
+
+      queryClient.invalidateQueries({ queryKey: reservationKeys.all });
     },
   });
 }

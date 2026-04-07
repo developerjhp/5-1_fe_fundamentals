@@ -1,7 +1,6 @@
 import { css } from "@emotion/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { HttpError } from "@/reservation/api/client";
 import { TIME_SLOTS } from "@/reservation/constants";
 import { useAvailableTimeSlots } from "@/reservation/hooks/useAvailableTimeSlots";
 import {
@@ -9,12 +8,20 @@ import {
   type ReservationFormInputValues,
   type ReservationFormValues,
 } from "@/reservation/schemas/reservation";
-import type {
-  ConflictError,
-  CreateReservationRequest,
-  Room,
-} from "@/reservation/types";
+import type { CreateReservationRequest, Room } from "@/reservation/types";
 import { color, spacing, fontSize, radius } from "@/styles/tokens";
+
+interface ConflictInfo {
+  title: string;
+  startTime: string;
+  endTime: string;
+}
+
+export interface SubmitError {
+  type: "conflict" | "server";
+  message: string;
+  conflict?: ConflictInfo;
+}
 
 interface ReservationFormProps {
   rooms: Room[];
@@ -25,7 +32,7 @@ interface ReservationFormProps {
   };
   onSubmit: (data: CreateReservationRequest) => void;
   isPending: boolean;
-  error: Error | null;
+  submitError: SubmitError | null;
 }
 
 const START_TIME_GUIDE = {
@@ -51,7 +58,7 @@ export function ReservationForm({
   initialValues,
   onSubmit,
   isPending,
-  error,
+  submitError,
 }: ReservationFormProps) {
   const schema = createReservationFormSchema(rooms);
   const {
@@ -100,29 +107,22 @@ export function ReservationForm({
   });
   const endTimeField = register("endTime");
 
-  const conflictInfo =
-    error instanceof HttpError && error.status === 409
-      ? (error.body as ConflictError).conflictWith
-      : null;
-
-  const serverError =
-    error instanceof HttpError && error.status >= 500
-      ? "서버 오류가 발생했습니다. 다시 시도해주세요."
-      : null;
-
   const attendeesGuide = selectedRoom
     ? `최대 ${selectedRoom.capacity}명까지 입력할 수 있습니다.`
     : "회의실 선택 후 최대 인원을 확인하세요.";
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      {conflictInfo && (
+      {submitError?.type === "conflict" && submitError.conflict && (
         <div css={errorBannerStyle}>
-          해당 시간대에 &apos;{conflictInfo.title}&apos; 예약이 존재합니다 (
-          {conflictInfo.startTime}~{conflictInfo.endTime})
+          해당 시간대에 &apos;{submitError.conflict.title}&apos; 예약이
+          존재합니다 ({submitError.conflict.startTime}~
+          {submitError.conflict.endTime})
         </div>
       )}
-      {serverError && <div css={errorBannerStyle}>{serverError}</div>}
+      {submitError?.type === "server" && (
+        <div css={errorBannerStyle}>{submitError.message}</div>
+      )}
 
       <div css={fieldStyle}>
         <label htmlFor="roomId">회의실</label>

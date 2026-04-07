@@ -16,7 +16,14 @@ export function ReservationDetailPage() {
   );
   const deleteMutation = useDeleteReservation();
 
-  const returnTo = (location.state as { from?: string } | null)?.from ?? "/";
+  const state = location.state;
+  const returnTo =
+    state != null &&
+    typeof state === "object" &&
+    "from" in state &&
+    typeof state.from === "string"
+      ? state.from
+      : "/";
   const roomsQuery = useQuery(roomsQueryOptions());
 
   if (isLoading) {

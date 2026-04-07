@@ -1,6 +1,9 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteReservation, reservationKeys } from '@/reservation/api/reservations';
-import type { Reservation, ReservationsResponse } from '@/reservation/types';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  deleteReservation,
+  reservationKeys,
+} from "@/reservation/api/reservations";
+import type { Reservation, ReservationsResponse } from "@/reservation/types";
 
 export function useDeleteReservation() {
   const queryClient = useQueryClient();
@@ -11,7 +14,9 @@ export function useDeleteReservation() {
       const { id, date } = variables;
 
       const removeById = (old: ReservationsResponse | undefined) => ({
-        reservations: (old?.reservations ?? []).filter((r: Reservation) => r.id !== id),
+        reservations: (old?.reservations ?? []).filter(
+          (r: Reservation) => r.id !== id,
+        ),
       });
 
       queryClient.setQueryData<ReservationsResponse>(
@@ -23,6 +28,8 @@ export function useDeleteReservation() {
         removeById,
       );
       queryClient.removeQueries({ queryKey: reservationKeys.detail(id) });
+
+      queryClient.invalidateQueries({ queryKey: reservationKeys.all });
     },
   });
 }
