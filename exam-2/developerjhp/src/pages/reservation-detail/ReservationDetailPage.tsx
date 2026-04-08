@@ -70,15 +70,6 @@ function ReservationDetail({
   const navigate = useNavigate();
   const deleteMutation = useDeleteReservation();
 
-  const handleDelete = () => {
-    if (!window.confirm("예약을 취소하시겠습니까?")) return;
-
-    deleteMutation.mutate(
-      { id: reservation.id, date: reservation.date },
-      { onSuccess: () => navigate(returnTo) },
-    );
-  };
-
   return (
     <div css={detailStyle}>
       <h1 css={css`margin-bottom: ${spacing.lg};`}>예약 상세</h1>
@@ -115,7 +106,14 @@ function ReservationDetail({
 
       <Button
         variant="danger"
-        onClick={handleDelete}
+        onClick={() => {
+          if (!window.confirm("예약을 취소하시겠습니까?")) return;
+
+          deleteMutation.mutate(
+            { id: reservation.id, date: reservation.date },
+            { onSuccess: () => navigate(returnTo) },
+          );
+        }}
         disabled={deleteMutation.isPending}
       >
         {deleteMutation.isPending ? "취소 중..." : "예약 취소"}

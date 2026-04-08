@@ -12,39 +12,38 @@ export function MyReservationsPage() {
     <div>
       <h1 css={css`margin-bottom: ${spacing.lg};`}>내 예약</h1>
       <AsyncBoundary pendingFallback={<p>내 예약을 불러오는 중입니다.</p>}>
-        <SuspenseQuery {...myReservationsQueryOptions()}>
-          {({ data: { reservations } }) => <MyReservationsList reservations={reservations} />}
-        </SuspenseQuery>
+      <SuspenseQuery {...myReservationsQueryOptions()}>
+      {({ data: { reservations } }) => {
+        if (reservations.length === 0) {
+          return <EmptyState title="예약이 없습니다." />;
+        }
+
+        const reservationsByDate = groupReservationsByDate(reservations);
+
+        return (
+          <div css={groupListStyle}>
+            {reservationsByDate.map(([date, reservations]) => (
+              <section key={date}>
+                <h2 css={groupTitleStyle}>{date}</h2>
+                <ul css={listStyle}>
+                  {reservations.map((reservation) => (
+                    <ReservationListItem
+                      key={reservation.id}
+                      reservation={reservation}
+                    />
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        );
+      }}
+    </SuspenseQuery>
       </AsyncBoundary>
     </div>
   );
 }
 
-function MyReservationsList({ reservations }: { reservations: Reservation[] }) {
-  if (reservations.length === 0) {
-    return <EmptyState title="예약이 없습니다." />;
-  }
-
-  const reservationsByDate = groupReservationsByDate(reservations);
-
-  return (
-    <div css={groupListStyle}>
-      {reservationsByDate.map(([date, reservations]) => (
-        <section key={date}>
-          <h2 css={groupTitleStyle}>{date}</h2>
-          <ul css={listStyle}>
-            {reservations.map((reservation) => (
-              <ReservationListItem
-                key={reservation.id}
-                reservation={reservation}
-              />
-            ))}
-          </ul>
-        </section>
-      ))}
-    </div>
-  );
-}
 
 function ReservationListItem({ reservation }: { reservation: Reservation }) {
   return (
