@@ -11,14 +11,12 @@ const MY_RESERVATIONS_PATH = "/api/my-reservations";
 
 export const reservationKeys = {
   all: ["reservations"] as const,
-  lists: () => [...reservationKeys.all, "list"] as const,
-  list: (date: string) => [...reservationKeys.lists(), date] as const,
-  details: () => [...reservationKeys.all, "detail"] as const,
-  detail: (id: string) => [...reservationKeys.details(), id] as const,
+  list: (date: string) => [...reservationKeys.all, "list", date] as const,
+  detail: (id: string) => [...reservationKeys.all, "detail", id] as const,
   my: () => [...reservationKeys.all, "my"] as const,
 };
 
-function reservationDetailPath(id: string) {
+function getReservationDetailPath(id: string) {
   return `${RESERVATIONS_PATH}/${id}`;
 }
 
@@ -31,7 +29,7 @@ export function fetchReservations(date: string): Promise<ReservationsResponse> {
 }
 
 export function fetchReservation(id: string): Promise<ReservationResponse> {
-  return requestJson(reservationDetailPath(id));
+  return requestJson(getReservationDetailPath(id));
 }
 
 export function fetchMyReservations(): Promise<ReservationsResponse> {
@@ -49,7 +47,7 @@ export function createReservation(
 }
 
 export function deleteReservation(id: string): Promise<{ message: string }> {
-  return requestJson(reservationDetailPath(id), { method: "DELETE" });
+  return requestJson(getReservationDetailPath(id), { method: "DELETE" });
 }
 
 export const reservationsQueryOptions = (date: string) =>
