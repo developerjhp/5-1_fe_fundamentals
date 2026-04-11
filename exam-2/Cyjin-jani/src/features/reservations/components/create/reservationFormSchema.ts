@@ -1,6 +1,7 @@
 import { z } from 'zod/v3';
 
 import { parseTimeToMinutes } from '@/features/reservations/lib/timelineSlots';
+import { formatLocalDate } from '@/lib/dateFormat';
 
 export const reservationFormSchema = z
   .object({
@@ -8,7 +9,7 @@ export const reservationFormSchema = z
     date: z
       .string()
       .min(1, '날짜를 입력해주세요.')
-      .refine((val) => val >= new Date().toISOString().slice(0, 10), {
+      .refine((val) => val >= formatLocalDate(new Date()), {
         message: '오늘 이후 날짜를 선택해주세요.',
       }),
     startTime: z.string().min(1, '시작 시간을 선택해주세요.'),

@@ -4,7 +4,7 @@ import { QueryErrorResetBoundary } from '@tanstack/react-query';
 
 import { MyReservationList } from '@/features/my/components/MyReservationList';
 import { QueryErrorFallback } from '@/shared/components/QueryErrorFallback';
-import { MyReservationListSkeleton } from '../../features/my/components/MyReservationListSkeleton';
+import { MyReservationListSkeleton } from '@/features/my/components/MyReservationListSkeleton';
 
 export function MyReservationsPage() {
   return (

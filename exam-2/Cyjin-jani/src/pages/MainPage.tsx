@@ -7,7 +7,7 @@ import { DateNavigator } from '@/features/reservations/components/DateNavigator'
 import { TimelineTable } from '@/features/reservations/components/TimelineTable';
 import { RoomsFilter } from '@/features/rooms/components/RoomsFilter';
 import type { Equipment } from '@/features/rooms/types';
-import { formatLocalDate } from '@/lib/dateFormat';
+import { formatLocalDate, parseLocalDate } from '@/lib/dateFormat';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { QueryErrorFallback } from '@/shared/components/QueryErrorFallback';
 
@@ -40,7 +40,7 @@ export function MainPage() {
   };
 
   const moveDate = (offset: number) => {
-    const next = new Date(selectedDate);
+    const next = parseLocalDate(selectedDate);
     next.setDate(next.getDate() + offset);
     updateParams({ date: formatLocalDate(next) });
   };

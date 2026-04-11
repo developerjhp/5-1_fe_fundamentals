@@ -24,6 +24,7 @@ export function ReservationDetail({ id }: ReservationDetailProps) {
   const { mutate: deleteReservation, isPending } = useDeleteReservation({
     onSuccess: () => {
       toast.success('예약이 취소되었습니다.');
+      setIsDialogOpen(false);
       navigate(-1);
     },
     onError: () => {
@@ -33,7 +34,6 @@ export function ReservationDetail({ id }: ReservationDetailProps) {
 
   const handleConfirmCancel = () => {
     deleteReservation(id);
-    setIsDialogOpen(false);
   };
 
   return (
