@@ -1,0 +1,51 @@
+import { Suspense, useState } from 'react';
+import { useLocation } from 'wouter';
+import { ErrorBoundary } from 'react-error-boundary';
+import { QueryErrorResetBoundary } from '@tanstack/react-query';
+import { CategoryTabs } from '@/features/menu/components/CategoryTabs';
+import { MenuList } from '@/features/menu/components/MenuList';
+import { MenuListSkeleton } from '@/features/menu/components/MenuListSkeleton';
+import { useCategories } from '@/features/menu/hooks/queries/useCategories';
+import { ErrorFallback } from '@/shared/components/ErrorFallback';
+import { LoadingFallback } from '@/shared/components/LoadingFallback';
+import { BottomCTA } from '@/shared/components/BottomCTA';
+import type { MenuCategory } from '@/types/order';
+
+function MenuPageContent() {
+  const { data: categories } = useCategories();
+  const [selectedCategory, setSelectedCategory] = useState<MenuCategory>(categories[0]);
+  const [_, navigate] = useLocation();
+
+  return (
+    <>
+      <header className="sticky top-0 z-10 bg-background">
+        <h1 className="px-4 py-4 text-lg font-bold">메뉴</h1>
+        <CategoryTabs
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+        />
+      </header>
+
+      <Suspense fallback={<MenuListSkeleton />}>
+        <MenuList selectedCategory={selectedCategory} />
+      </Suspense>
+
+      <BottomCTA label="장바구니 보기" onClick={() => navigate('/cart')} />
+    </>
+  );
+}
+
+export function MenuPage() {
+  return (
+    <QueryErrorResetBoundary>
+      {({ reset }) => (
+        <ErrorBoundary onReset={reset} FallbackComponent={ErrorFallback}>
+          <Suspense fallback={<LoadingFallback />}>
+            <MenuPageContent />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+    </QueryErrorResetBoundary>
+  );
+}
