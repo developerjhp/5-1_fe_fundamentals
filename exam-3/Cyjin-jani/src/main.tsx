@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { DevToolPanel } from './DevToolPanel';
 import { initializeMockStorage } from './mocks/storage';
+import { Toaster } from './shared/components/ui/sonner';
 import './styles/index.css';
 
 const queryClient = new QueryClient({
@@ -32,6 +33,7 @@ enableMocking().then(() => {
       <QueryClientProvider client={queryClient}>
         <DevToolPanel />
         <App />
+        <Toaster />
       </QueryClientProvider>
     </React.StrictMode>,
   );

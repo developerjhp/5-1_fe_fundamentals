@@ -3,6 +3,7 @@ import { useLocation } from 'wouter';
 import { ErrorBoundary } from 'react-error-boundary';
 import { QueryErrorResetBoundary } from '@tanstack/react-query';
 import { CategoryTabs } from '@/features/menu/components/CategoryTabs';
+import { MenuMainGnb } from '@/features/menu/components/MenuMainGnb';
 import { MenuList } from '@/features/menu/components/MenuList';
 import { MenuListSkeleton } from '@/features/menu/components/MenuListSkeleton';
 import { useCategories } from '@/features/menu/hooks/queries/useCategories';
@@ -18,14 +19,14 @@ function MenuPageContent() {
 
   return (
     <>
-      <header className="sticky top-0 z-10 bg-background">
-        <h1 className="px-4 py-4 text-lg font-bold">메뉴</h1>
+      <div className="sticky top-0 z-10 bg-background">
+        <MenuMainGnb />
         <CategoryTabs
           categories={categories}
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
         />
-      </header>
+      </div>
 
       <Suspense fallback={<MenuListSkeleton />}>
         <MenuList selectedCategory={selectedCategory} />
