@@ -8,12 +8,7 @@ interface CartState {
 
 type Listener = () => void;
 
-const listeners = new Set<Listener>();
-let state: CartState = { items: [], totalQuantity: 0, totalPrice: 0 };
-
-function emitChange() {
-  for (const listener of listeners) listener();
-}
+const STORAGE_KEY = 'cart';
 
 function recalcTotals(items: CartItem[]): CartState {
   return {
@@ -21,6 +16,31 @@ function recalcTotals(items: CartItem[]): CartState {
     totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
     totalPrice: items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
   };
+}
+
+function loadFromStorage(): CartState {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const items: CartItem[] = JSON.parse(raw);
+      return recalcTotals(items);
+    }
+  } catch { /* ignore corrupt data */ }
+  return { items: [], totalQuantity: 0, totalPrice: 0 };
+}
+
+function saveToStorage(items: CartItem[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  } catch { /* storage full or unavailable */ }
+}
+
+const listeners = new Set<Listener>();
+let state: CartState = loadFromStorage();
+
+function emitChange() {
+  saveToStorage(state.items);
+  for (const listener of listeners) listener();
 }
 
 export function getCartId(itemId: string, options: OptionSelection[]): string {

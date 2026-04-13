@@ -107,7 +107,7 @@ export function MenuPage() {
   return (
     <>
       <div css={pageTitle}>
-        <h1 css={title}>커피 사일로</h1>
+        <h1 css={title}>카페 주문하기</h1>
       </div>
       <AsyncBoundary fallback={<MenuPageSkeleton />}>
         <MenuItemsSection />
