@@ -67,6 +67,7 @@ export interface Order {
 export interface CartItem {
   itemId: string;
   title: string;
+  iconImg?: string;
   basePrice: number;
   options: OptionSelection[];
   quantity: number;
