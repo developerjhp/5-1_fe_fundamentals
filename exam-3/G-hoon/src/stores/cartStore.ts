@@ -12,9 +12,11 @@ function clampQuantity(quantity: number): number {
 function cartItemKey(itemId: string, options: OptionSelection[]): string {
   const sortedOptions = [...options]
     .sort((a, b) => a.optionId - b.optionId)
-    .map((o) => `${o.optionId}:${[...o.labels].sort().join(',')}`)
-    .join('|');
-  return `${itemId}::${sortedOptions}`;
+    .map((option) => ({
+      optionId: option.optionId,
+      labels: [...option.labels].sort(),
+    }));
+  return JSON.stringify([itemId, sortedOptions]);
 }
 
 type AddCartItem = Omit<CartItem, 'id'>;
@@ -94,6 +96,7 @@ export const useCartStore = create<CartState>()(
       name: 'exam-3/g-hoon:cart',
       version: 1,
       migrate: (persistedState) => {
+        // persist version 0 -> 1: id 필드가 없던 장바구니 항목을 복원합니다.
         const state = (persistedState ?? {}) as Partial<{
           items: StoredCartItem[];
         }>;

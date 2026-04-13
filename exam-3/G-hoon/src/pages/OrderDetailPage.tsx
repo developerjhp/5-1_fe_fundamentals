@@ -94,8 +94,6 @@ function OrderDetailContent({ itemId }: { itemId: string }) {
     return map;
   }, [itemOptions, selections]);
 
-  const hasValidationError = optionErrors.size > 0;
-
   const validateAndAddToCart = () => {
     const validationMessage = validateOptionSelections(itemOptions, selections);
 
@@ -186,7 +184,6 @@ function OrderDetailContent({ itemId }: { itemId: string }) {
       <BottomCTA
         label={`${formatPrice(totalPrice)}원 담기`}
         onClick={validateAndAddToCart}
-        disabled={hasValidationError}
       />
     </>
   );

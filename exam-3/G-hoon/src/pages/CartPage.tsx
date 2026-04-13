@@ -80,8 +80,9 @@ export function CartPage() {
         <button
           type="button"
           onClick={() => navigate(-1)}
+          disabled={isPending}
           aria-label="이전 화면으로 돌아가기"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-100"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <ChevronLeft size={20} />
         </button>

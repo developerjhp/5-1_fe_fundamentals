@@ -39,6 +39,7 @@ export interface MenuItem {
   optionIds: number[];
 }
 
+// grid/select: labels.length === 1, list: minCount <= labels.length <= maxCount
 export interface OptionSelection {
   optionId: number;
   labels: string[];
