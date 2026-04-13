@@ -3,20 +3,20 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router";
 
 import {
+  MenuPage,
   CartPage,
-  CatalogPage,
   NotFoundPage,
-  CatalogDetailPage,
+  MenuDetailPage,
   OrderCompletePage,
 } from "@/pages";
 import { AppProviders } from "@/providers";
 import { DevToolPanel } from "@/DevToolPanel";
 
 import { Layout } from "@/shared/layout";
+import { AsyncBoundary } from "@/shared/components";
 import { initializeMockStorage } from "@/mocks/storage";
 
 import "@/styles/reset.css";
-import { AsyncBoundary } from "@/shared/components";
 
 async function enableMocking() {
   const { worker } = await import("@/mocks/browser");
@@ -36,8 +36,8 @@ enableMocking().then(() => {
           <Layout>
             <AsyncBoundary>
               <Routes>
-                <Route path="/" element={<CatalogPage />} />
-                <Route path="/menu/:itemId" element={<CatalogDetailPage />} />
+                <Route path="/" element={<MenuPage />} />
+                <Route path="/menu/:itemId" element={<MenuDetailPage />} />
                 <Route path="/cart" element={<CartPage />} />
                 <Route
                   path="/orders/:orderId"

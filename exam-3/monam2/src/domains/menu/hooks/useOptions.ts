@@ -9,6 +9,7 @@ export default function useOptions() {
     queryKey: QUERY_KEY,
     queryFn: getOptions,
     select: (data) => data.options,
+    staleTime: Infinity, // 옵션은 바뀌지 않는다
   });
 }
 

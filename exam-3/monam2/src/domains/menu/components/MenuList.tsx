@@ -2,12 +2,12 @@ import { Link } from "react-router";
 import { css } from "@emotion/react";
 import { useQueryState } from "nuqs";
 
-import { MenuCard } from "@/domains/menu/components";
 import { isMenuCategory } from "@/domains/menu/utils";
-import { useCatalogItems } from "@/domains/menu/hooks";
+import { useMenus } from "@/domains/menu/hooks";
 
 import { routes } from "@/shared/routes";
 import type { MenuView } from "@/shared/types";
+import { MenuCard } from "@/shared/components";
 
 export default function MenuList() {
   const [category] = useQueryState("category");
@@ -16,7 +16,7 @@ export default function MenuList() {
   const selectedCategory = isMenuCategory(category) ? category : undefined;
   const selectedView: MenuView = view === "list" ? "list" : "grid";
 
-  const { data: catalogs } = useCatalogItems(selectedCategory);
+  const { data: catalogs } = useMenus(selectedCategory);
 
   return (
     <div css={groupStyle}>

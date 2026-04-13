@@ -1,10 +1,14 @@
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { getItem } from '@/domains/menu/apis';
+import { getItem } from "@/domains/menu/apis";
 
-const QUERY_KEY = ['menu', 'item'] as const;
+const QUERY_KEY = ["menu", "item"] as const;
 
-export default function useMenuItem(id: string) {
+interface UseMenuItemProps {
+  id: string;
+}
+
+export default function useMenuItem({ id }: UseMenuItemProps) {
   return useSuspenseQuery({
     queryKey: useMenuItem.getQueryKeys(id),
     queryFn: () => getItem(id),

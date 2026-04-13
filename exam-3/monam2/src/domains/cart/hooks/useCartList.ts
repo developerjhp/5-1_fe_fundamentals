@@ -1,15 +1,6 @@
-import { useMemo, useSyncExternalStore } from "react";
-
-import type { CartItem } from "@/shared/types";
-import { createLocalStorageStore } from "@/shared/utils";
-
-const CART_STORAGE_KEY = "sipe-order";
-const EMPTY_CART_DATA = "[]";
-
-const defaultCartStorage = createLocalStorageStore(
-  CART_STORAGE_KEY,
-  EMPTY_CART_DATA,
-);
+import { useMemo, useSyncExternalStore } from 'react';
+import { cartStorage, EMPTY_CART_SNAPSHOT } from '@/domains/cart/utils';
+import type { CartItem } from '@/shared/types';
 
 function parseCartItems(snapshot: string) {
   try {
@@ -19,11 +10,11 @@ function parseCartItems(snapshot: string) {
   }
 }
 
-export default function useCartList(storage = defaultCartStorage) {
+export default function useCartList(storage = cartStorage) {
   const cartSnapshot = useSyncExternalStore(
     storage.subscribe,
     storage.getSnapshot,
-    () => EMPTY_CART_DATA,
+    () => EMPTY_CART_SNAPSHOT,
   );
 
   const items = useMemo(() => parseCartItems(cartSnapshot), [cartSnapshot]);

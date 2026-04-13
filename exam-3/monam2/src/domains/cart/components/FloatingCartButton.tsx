@@ -1,16 +1,16 @@
-import { css } from "@emotion/react";
-import { Link, useLocation } from "react-router";
+import { css } from '@emotion/react';
+import { Link, useLocation } from 'react-router';
 
-import { useCartList } from "@/domains/cart/hooks";
+import { useCartList } from '@/domains/cart/hooks';
 
-import { routes } from "@/shared/routes";
-import { formatCurrencyKRW } from "@/shared/utils";
+import { routes } from '@/shared/routes';
+import { formatCurrencyKRW } from '@/shared/utils';
 
 export default function FloatingCartButton() {
   const { pathname } = useLocation();
   const { totalPrice, totalQuantity } = useCartList();
 
-  if (pathname === routes.cart) {
+  if (pathname === routes.cart || pathname.startsWith('/menu/')) {
     return null;
   }
 
@@ -36,32 +36,32 @@ export default function FloatingCartButton() {
 }
 
 const buttonStyle = css({
-  position: "fixed",
-  right: "24px",
-  bottom: "24px",
+  position: 'fixed',
+  right: '24px',
+  bottom: '24px',
   zIndex: 20,
-  display: "grid",
-  gap: "4px",
-  minWidth: "148px",
-  padding: "8px 16px",
-  borderRadius: "8px",
-  backgroundColor: "#f97316",
-  color: "#ffffff",
-  textDecoration: "none",
-  boxShadow: "0 16px 40px rgba(17, 24, 39, 0.18)",
+  display: 'grid',
+  gap: '4px',
+  minWidth: '148px',
+  padding: '8px 16px',
+  borderRadius: '8px',
+  backgroundColor: '#f97316',
+  color: '#ffffff',
+  textDecoration: 'none',
+  boxShadow: '0 16px 40px rgba(17, 24, 39, 0.18)',
 });
 
 const labelStyle = css({
-  fontSize: "0.875rem",
+  fontSize: '0.875rem',
   fontWeight: 600,
   opacity: 0.8,
 });
 
 const summaryStyle = css({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: "12px",
-  fontSize: "0.9375rem",
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '12px',
+  fontSize: '0.9375rem',
   lineHeight: 1.2,
 });
