@@ -7,6 +7,14 @@ import { BottomCTA, BottomCTASpacer } from '@/components/common/BottomCTA';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useOrder } from '@/hooks/useOrder';
 import { formatPrice } from '@/lib/formatters';
+import type { OrderStatus } from '@/types/order';
+
+const ORDER_STATUS_MESSAGE: Record<OrderStatus, string> = {
+  pending: '주문이 접수되었어요',
+  preparing: '주문을 준비하고 있어요',
+  completed: '주문이 완료되었어요',
+  cancelled: '취소된 주문입니다',
+};
 
 export function OrderCompletePage() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -39,7 +47,9 @@ function OrderCompleteContent({ orderId }: { orderId: string }) {
     <>
       <section className="flex flex-col items-center gap-4 px-4 pt-16 pb-8">
         <CheckCircle size={56} className="text-blue-500" />
-        <h1 className="text-xl font-bold text-gray-950">주문이 완료되었어요</h1>
+        <h1 className="text-xl font-bold text-gray-950">
+          {ORDER_STATUS_MESSAGE[order.status]}
+        </h1>
         <p className="text-sm text-gray-500">주문번호: {order.id}</p>
       </section>
 
