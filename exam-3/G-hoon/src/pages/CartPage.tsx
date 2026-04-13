@@ -42,15 +42,11 @@ export function CartPage() {
         labels,
       })),
     }));
-    const orderTotalPrice = items.reduce(
-      (sum, item) => sum + item.unitPrice * item.quantity,
-      0,
-    );
 
     mutate(
       {
         customerName: '김민수',
-        totalPrice: orderTotalPrice,
+        totalPrice,
         items: orderItems,
       },
       {

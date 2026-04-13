@@ -38,17 +38,25 @@ const OPTION_VALIDATION_RULES: OptionValidationRule[] = [
   },
 ];
 
+export function validateOption(
+  option: MenuOption,
+  selected: string[],
+): string | null {
+  for (const rule of OPTION_VALIDATION_RULES) {
+    const message = rule(option, selected);
+    if (message) return message;
+  }
+  return null;
+}
+
 export function validateOptionSelections(
   options: MenuOption[],
   selections: Map<number, string[]>,
 ): string | null {
   for (const opt of options) {
     const selected = selections.get(opt.id) ?? [];
-
-    for (const rule of OPTION_VALIDATION_RULES) {
-      const message = rule(opt, selected);
-      if (message) return message;
-    }
+    const message = validateOption(opt, selected);
+    if (message) return message;
   }
 
   return null;

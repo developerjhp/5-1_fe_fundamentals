@@ -4,9 +4,15 @@ interface OptionGridProps {
   option: GridOption;
   selected: string | null;
   onSelect: (label: string) => void;
+  errorMessage?: string | null;
 }
 
-export function OptionGrid({ option, selected, onSelect }: OptionGridProps) {
+export function OptionGrid({
+  option,
+  selected,
+  onSelect,
+  errorMessage,
+}: OptionGridProps) {
   return (
     <fieldset className="space-y-2">
       <legend className="text-sm font-semibold text-gray-900">
@@ -43,6 +49,11 @@ export function OptionGrid({ option, selected, onSelect }: OptionGridProps) {
           );
         })}
       </div>
+      {errorMessage && (
+        <p className="text-xs text-red-500" aria-live="polite">
+          {errorMessage}
+        </p>
+      )}
     </fieldset>
   );
 }

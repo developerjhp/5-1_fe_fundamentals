@@ -11,7 +11,7 @@ export function calculateUnitPrice(
     if (!option) continue;
     for (const label of selection.labels) {
       const idx = option.labels.indexOf(label);
-      if (idx !== -1) total += option.prices[idx];
+      if (idx !== -1) total += option.prices[idx] ?? 0;
     }
   }
   return total;

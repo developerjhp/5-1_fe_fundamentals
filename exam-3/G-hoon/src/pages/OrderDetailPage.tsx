@@ -1,5 +1,5 @@
 import { ChevronLeft } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ApiError } from '@/api/error';
@@ -16,7 +16,10 @@ import { useOptionSelections } from '@/hooks/useOptionSelections';
 import { useOrderPrice } from '@/hooks/useOrderPrice';
 import { toCartOptionSelections } from '@/lib/cartOptions';
 import { formatPrice } from '@/lib/formatters';
-import { validateOptionSelections } from '@/lib/optionValidation';
+import {
+  validateOption,
+  validateOptionSelections,
+} from '@/lib/optionValidation';
 import { useCartStore } from '@/stores/cartStore';
 import type { MenuOption } from '@/types/order';
 
@@ -81,6 +84,18 @@ function OrderDetailContent({ itemId }: { itemId: string }) {
     options: itemOptions,
   });
 
+  const optionErrors = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const opt of itemOptions) {
+      const selected = selections.get(opt.id) ?? [];
+      const message = validateOption(opt, selected);
+      if (message) map.set(opt.id, message);
+    }
+    return map;
+  }, [itemOptions, selections]);
+
+  const hasValidationError = optionErrors.size > 0;
+
   const validateAndAddToCart = () => {
     const validationMessage = validateOptionSelections(itemOptions, selections);
 
@@ -111,6 +126,7 @@ function OrderDetailContent({ itemId }: { itemId: string }) {
             option={option}
             selected={getSingleSelection(option.id)}
             onSelect={(label) => selectGridOption(option.id, label)}
+            errorMessage={optionErrors.get(option.id) ?? null}
           />
         );
       case 'select':
@@ -129,6 +145,7 @@ function OrderDetailContent({ itemId }: { itemId: string }) {
             option={option}
             selected={getListSelection(option.id)}
             onToggle={(label) => toggleListOption(option.id, label)}
+            errorMessage={optionErrors.get(option.id) ?? null}
           />
         );
     }
@@ -169,6 +186,7 @@ function OrderDetailContent({ itemId }: { itemId: string }) {
       <BottomCTA
         label={`${formatPrice(totalPrice)}원 담기`}
         onClick={validateAndAddToCart}
+        disabled={hasValidationError}
       />
     </>
   );
