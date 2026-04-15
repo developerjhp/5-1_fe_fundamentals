@@ -1,0 +1,6 @@
+[
+  { "key": "beginner", "name": "입문" },
+  { "key": "basic",    "name": "기초" },
+  { "key": "advanced", "name": "심화" },
+  { "key": "expert",   "name": "실전" }
+]
