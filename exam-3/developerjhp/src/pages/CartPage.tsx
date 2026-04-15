@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router";
+import { toast } from "sonner";
 import {
   MAX_QUANTITY,
   MIN_QUANTITY,
@@ -30,6 +31,13 @@ export function CartPage() {
     onSuccess: ({ orderId }) => {
       clear();
       navigate(`/orders/${orderId}`);
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "주문에 실패했어요. 잠시 후 다시 시도해주세요.",
+      );
     },
   });
 
@@ -68,14 +76,6 @@ export function CartPage() {
               <CartItemRow key={key} cartItemKey={key} item={item} />
             ))}
           </List>
-
-          {createOrderMutation.isError && (
-            <ErrorBanner>
-              {createOrderMutation.error instanceof ApiError
-                ? createOrderMutation.error.message
-                : "주문에 실패했어요. 잠시 후 다시 시도해주세요."}
-            </ErrorBanner>
-          )}
 
           <CTAContainer>
             <CTAButton type="submit" disabled={createOrderMutation.isPending}>
@@ -245,15 +245,6 @@ const QtyValue = styled.span`
   min-width: 20px;
   text-align: center;
   font-weight: 600;
-`;
-
-const ErrorBanner = styled.div`
-  padding: 12px 16px;
-  margin: 16px 0 0;
-  background: #fee2e2;
-  color: #b91c1c;
-  border-radius: 8px;
-  font-size: 14px;
 `;
 
 const CTAButton = styled.button`

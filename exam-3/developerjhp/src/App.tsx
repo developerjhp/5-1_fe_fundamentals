@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes } from 'react-router';
+import { Toaster } from 'sonner';
 import { CartPage } from '@/pages/CartPage';
 import { MenuDetailPage } from '@/pages/MenuDetailPage';
 import { MenuPage } from '@/pages/MenuPage';
@@ -27,6 +28,7 @@ export function App() {
           <Route path="/orders/:orderId" element={<OrderCompletePage />} />
         </Routes>
       </BrowserRouter>
+      <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );
 }

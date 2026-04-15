@@ -4,6 +4,7 @@ import { SuspenseQueries } from "@suspensive/react-query";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import { toast } from "sonner";
 import {
   calculateUnitPrice,
   MAX_QUANTITY,
@@ -65,7 +66,6 @@ function AddToCartForm({
 }) {
   const [selection, setSelection] = useState<Record<number, string[]>>({});
   const [quantity, setQuantity] = useState(MIN_QUANTITY);
-  const [error, setError] = useState<string | null>(null);
   const addItem = useCartStore((state) => state.addItem);
   const navigate = useNavigate();
 
@@ -82,7 +82,7 @@ function AddToCartForm({
         event.preventDefault();
         const result = validateSelection(options, selectionArray);
         if (!result.ok) {
-          setError(result.reason);
+          toast.error(result.reason);
           return;
         }
         addItem({
@@ -109,10 +109,9 @@ function AddToCartForm({
             <OptionGrid
               option={option}
               selected={selection[option.id]?.[0] ?? null}
-              onChange={(label) => {
-                setError(null);
-                setSelection((prev) => ({ ...prev, [option.id]: [label] }));
-              }}
+              onChange={(label) =>
+                setSelection((prev) => ({ ...prev, [option.id]: [label] }))
+              }
             />
           )}
 
@@ -120,10 +119,9 @@ function AddToCartForm({
             <OptionSelect
               option={option}
               selected={selection[option.id]?.[0] ?? null}
-              onChange={(label) => {
-                setError(null);
-                setSelection((prev) => ({ ...prev, [option.id]: [label] }));
-              }}
+              onChange={(label) =>
+                setSelection((prev) => ({ ...prev, [option.id]: [label] }))
+              }
             />
           )}
 
@@ -132,7 +130,12 @@ function AddToCartForm({
               option={option}
               selected={selection[option.id] ?? []}
               onChange={(labels) => {
-                setError(null);
+                if (labels.length > option.maxCount) {
+                  toast.error(
+                    `${option.name} 옵션은 최대 ${option.maxCount}개까지 선택할 수 있어요.`,
+                  );
+                  return;
+                }
                 setSelection((prev) => ({ ...prev, [option.id]: labels }));
               }}
             />
@@ -141,8 +144,6 @@ function AddToCartForm({
       ))}
 
       <QuantityControl value={quantity} onChange={setQuantity} />
-
-      {error && <ErrorBanner>{error}</ErrorBanner>}
 
       <SubmitButton type="submit">
         {totalPrice.toLocaleString()}원 담기
@@ -244,8 +245,6 @@ function OptionList({
   selected: string[];
   onChange: (next: string[]) => void;
 }) {
-  const isMaxReached = selected.length >= option.maxCount;
-
   return (
     <CheckList>
       {option.labels.map((label, i) => {
@@ -255,7 +254,6 @@ function OptionList({
             <input
               type="checkbox"
               checked={isOn}
-              disabled={!isOn && isMaxReached}
               onChange={() => {
                 onChange(
                   isOn
@@ -498,15 +496,6 @@ const QuantityBtn = styled.button`
 const QuantityValue = styled.span`
   min-width: 24px;
   text-align: center;
-`;
-
-const ErrorBanner = styled.div`
-  padding: 12px 16px;
-  margin: 16px 0;
-  background: #fee2e2;
-  color: #b91c1c;
-  border-radius: 8px;
-  font-size: 14px;
 `;
 
 const SubmitButton = styled.button`
