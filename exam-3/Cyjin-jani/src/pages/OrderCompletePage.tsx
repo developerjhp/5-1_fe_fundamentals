@@ -4,7 +4,7 @@ import { ErrorBoundary, type FallbackProps } from 'react-error-boundary';
 import { useLocation, useRoute } from 'wouter';
 
 import { OrderCompleteContent } from '@/features/order/components/OrderCompleteContent';
-import { OrderCompleteGnb } from '@/features/order/components/OrderCompleteGnb';
+import { Gnb } from '@/shared/components/Gnb';
 import { OrderNotFound } from '@/features/order/components/OrderNotFound';
 import { BottomCTA } from '@/shared/components/BottomCTA';
 import { HttpStatusErrorFallback } from '@/shared/components/HttpStatusErrorFallback';
@@ -19,7 +19,7 @@ export function OrderCompletePage() {
 
   return (
     <>
-      <OrderCompleteGnb onReturnToMenu={goMenu} />
+      <Gnb variant="home" title="주문 완료" onLeftClick={goMenu} />
       <QueryErrorResetBoundary>
         {({ reset }) => (
           <ErrorBoundary onReset={reset} FallbackComponent={OrderCompletePageErrorFallback}>

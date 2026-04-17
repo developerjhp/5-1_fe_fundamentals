@@ -4,7 +4,7 @@ import { ErrorBoundary, type FallbackProps } from 'react-error-boundary';
 import { useLocation, useRoute } from 'wouter';
 
 import { MenuDetailContent } from '@/features/menu/components/MenuDetailContent';
-import { MenuDetailGnb } from '@/features/menu/components/MenuDetailGnb';
+import { Gnb } from '@/shared/components/Gnb';
 import { MenuDetailSkeleton } from '@/features/menu/components/MenuDetailSkeleton';
 import { MenuItemNotFound } from '@/features/menu/components/MenuItemNotFound';
 import { HttpStatusErrorFallback } from '@/shared/components/HttpStatusErrorFallback';
@@ -16,7 +16,7 @@ export function MenuDetailPage() {
 
   return (
     <>
-      <MenuDetailGnb onReturnToMenu={() => setLocation('/')} />
+      <Gnb variant="back" title="메뉴 상세" onLeftClick={() => setLocation('/')} />
       <QueryErrorResetBoundary>
         {({ reset }) => (
           <ErrorBoundary onReset={reset} FallbackComponent={MenuDetailPageErrorFallback}>
