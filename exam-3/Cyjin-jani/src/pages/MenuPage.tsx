@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react';
+import { Suspense } from 'react';
 import { useLocation } from 'wouter';
 import { ErrorBoundary } from 'react-error-boundary';
 import { QueryErrorResetBoundary } from '@tanstack/react-query';
@@ -11,14 +11,14 @@ import { useCartTotalPrice, useCartTotalQuantity } from '@/features/cart/store/u
 import { ErrorFallback } from '@/shared/components/ErrorFallback';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { BottomCTA } from '@/shared/components/BottomCTA';
-import type { MenuCategory } from '@/features/menu/types';
+import { useMenuCategoryParam } from '@/features/menu/hooks/useMenuCategoryParam';
 
 function MenuPageContent() {
   const { data: categories } = useCategories();
-  const [selectedCategory, setSelectedCategory] = useState<MenuCategory>(categories[0]); // TODO: 다른 방식으로 초기값 세팅 설정 필요
   const [_, navigate] = useLocation();
   const totalQuantity = useCartTotalQuantity();
   const totalPrice = useCartTotalPrice();
+  const { selectedCategory, onCategoryChange } = useMenuCategoryParam(categories);
 
   const ctaLabel =
     totalQuantity === 0
@@ -32,7 +32,7 @@ function MenuPageContent() {
         <CategoryTabs
           categories={categories}
           selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
+          onCategoryChange={onCategoryChange}
         />
       </div>
 
