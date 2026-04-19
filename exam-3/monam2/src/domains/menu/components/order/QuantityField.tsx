@@ -1,3 +1,4 @@
+import { MAX_QUANTITY } from '@/domains/cart/utils';
 import {
   quantityButtonStyle,
   quantityCardStyle,
@@ -22,7 +23,7 @@ export default function QuantityField({
     <Card.Root css={quantityCardStyle}>
       <div css={quantityHeaderStyle}>
         <Card.Title>수량</Card.Title>
-        <Card.Meta css={quantityMetaStyle}>1~99개</Card.Meta>
+        <Card.Meta css={quantityMetaStyle}>1~{MAX_QUANTITY}개</Card.Meta>
       </div>
       <div css={quantityControlStyle}>
         <button
@@ -36,7 +37,7 @@ export default function QuantityField({
         <input
           css={quantityInputStyle}
           inputMode="numeric"
-          max={99}
+          max={MAX_QUANTITY}
           min={1}
           type="number"
           value={quantity}

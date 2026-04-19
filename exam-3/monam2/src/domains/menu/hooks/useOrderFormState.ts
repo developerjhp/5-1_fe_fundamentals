@@ -1,12 +1,14 @@
-import { useState } from "react";
-import type { ListOption, MenuOption, SelectOption } from "@/shared/types";
+import { useState } from 'react';
+import { toast } from 'sonner';
 import {
-  getSelectedLabels,
+  clampQuantity,
   type GridSelections,
+  getSelectedOptions,
   type ListSelections,
+  type OrderFormSelections,
   type SelectSelections,
-} from "@/domains/menu/utils/orderForm";
-import { toast } from "sonner";
+} from '@/domains/menu/utils/orderForm';
+import type { ListOption, MenuOption, SelectOption } from '@/shared/types';
 
 export default function useOrderFormState(visibleOptions: MenuOption[]) {
   const [gridSelections, setGridSelections] = useState<GridSelections>({});
@@ -19,35 +21,46 @@ export default function useOrderFormState(visibleOptions: MenuOption[]) {
   >(null);
   const [quantity, setQuantity] = useState(1);
 
-  const updateQuantity = (nextQuantity: number) => {
-    setQuantity(Math.min(99, Math.max(1, nextQuantity)));
+  const selections: OrderFormSelections = {
+    gridSelections,
+    selectSelections,
+    listSelections,
   };
 
   const openedSelectOption =
     visibleOptions.find(
       (option): option is SelectOption =>
-        option.type === "select" && option.id === bottomSheetSelection,
+        option.type === 'select' && option.id === bottomSheetSelection,
     ) ?? null;
 
-  const selectedOptions = visibleOptions.flatMap((option) => {
-    const labels = getSelectedLabels(
-      option,
-      gridSelections,
-      selectSelections,
-      listSelections,
-    );
+  const selectedOptions = getSelectedOptions(visibleOptions, selections);
 
-    if (labels.length === 0) {
-      return [];
-    }
+  const changeQuantity = (nextQuantity: number) => {
+    setQuantity(clampQuantity(nextQuantity));
+  };
 
-    return [
-      {
-        optionId: option.id,
-        labels,
-      },
-    ];
-  });
+  const selectGridOption = (optionId: number, label: string) => {
+    setGridSelections((current) => ({
+      ...current,
+      [optionId]: label,
+    }));
+  };
+
+  const openSelectOption = (optionId: number) => {
+    setBottomSheetSelection(optionId);
+  };
+
+  const closeSelectOption = () => {
+    setBottomSheetSelection(null);
+  };
+
+  const selectOption = (optionId: number, label: string | undefined) => {
+    setSelectSelections((current) => ({
+      ...current,
+      [optionId]: label,
+    }));
+    closeSelectOption();
+  };
 
   const toggleListOption = (option: ListOption, label: string) => {
     const currentLabels = listSelections[option.id] ?? [];
@@ -76,19 +89,15 @@ export default function useOrderFormState(visibleOptions: MenuOption[]) {
     gridSelections,
     selectSelections,
     listSelections,
-    bottomSheetSelection,
+    selections,
     quantity,
-
     openedSelectOption,
     selectedOptions,
-
-    updateQuantity,
-    setGridSelections,
-    setSelectSelections,
-    setListSelections,
-    setBottomSheetSelection,
-    setQuantity,
-
+    changeQuantity,
+    selectGridOption,
+    openSelectOption,
+    closeSelectOption,
+    selectOption,
     toggleListOption,
   };
 }

@@ -1,9 +1,15 @@
-import type { MenuItem, MenuOption } from "@/shared/types";
-import { calculateOptionPrice } from ".";
+import { MAX_QUANTITY } from '@/domains/cart/utils';
+import type { MenuItem, MenuOption } from '@/shared/types';
+import { calculateOptionPrice } from '.';
 
 export type GridSelections = Record<number, string | undefined>;
 export type SelectSelections = Record<number, string | undefined>;
 export type ListSelections = Record<number, string[] | undefined>;
+export interface OrderFormSelections {
+  gridSelections: GridSelections;
+  selectSelections: SelectSelections;
+  listSelections: ListSelections;
+}
 
 /**
  * 선택된 라벨을 가져옵니다.
@@ -15,19 +21,21 @@ export type ListSelections = Record<number, string[] | undefined>;
  */
 export function getSelectedLabels(
   option: MenuOption,
-  gridSelections: GridSelections,
-  selectSelections: SelectSelections,
-  listSelections: ListSelections,
+  selections: OrderFormSelections,
 ) {
-  if (option.type === "grid") {
-    return gridSelections[option.id] ? [gridSelections[option.id]!] : [];
+  if (option.type === 'grid') {
+    return selections.gridSelections[option.id]
+      ? [selections.gridSelections[option.id]!]
+      : [];
   }
 
-  if (option.type === "select") {
-    return selectSelections[option.id] ? [selectSelections[option.id]!] : [];
+  if (option.type === 'select') {
+    return selections.selectSelections[option.id]
+      ? [selections.selectSelections[option.id]!]
+      : [];
   }
 
-  return listSelections[option.id] ?? [];
+  return selections.listSelections[option.id] ?? [];
 }
 
 /**
@@ -57,7 +65,48 @@ export function hasBatchim(value: string) {
  * @returns 선택 메시지
  */
 export function getSelectRequiredMessage(value: string) {
-  return `${value}${hasBatchim(value) ? "을" : "를"} 선택해주세요`;
+  return `${value}${hasBatchim(value) ? '을' : '를'} 선택해주세요`;
+}
+
+export function getSelectedOptions(
+  visibleOptions: MenuOption[],
+  selections: OrderFormSelections,
+) {
+  return visibleOptions.flatMap((option) => {
+    const labels = getSelectedLabels(option, selections);
+
+    if (labels.length === 0) {
+      return [];
+    }
+
+    return [
+      {
+        optionId: option.id,
+        labels,
+      },
+    ];
+  });
+}
+
+export function getOrderValidationMessage(
+  visibleOptions: MenuOption[],
+  selections: OrderFormSelections,
+) {
+  for (const option of visibleOptions) {
+    const labels = getSelectedLabels(option, selections);
+
+    if (option.type === 'list' && labels.length < option.minCount) {
+      return option.minCount === 1
+        ? getSelectRequiredMessage(option.name)
+        : `${option.name}${hasBatchim(option.name) ? '을' : '를'} 최소 ${option.minCount}개 선택해주세요`;
+    }
+
+    if (option.required && labels.length === 0) {
+      return getSelectRequiredMessage(option.name);
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -72,24 +121,18 @@ export function getSelectRequiredMessage(value: string) {
 export function calculateUnitPrice(
   menuItem: MenuItem,
   visibleOptions: MenuOption[],
-  gridSelections: GridSelections,
-  selectSelections: SelectSelections,
-  listSelections: ListSelections,
+  selections: OrderFormSelections,
 ) {
   const optionPrice = visibleOptions.reduce((total, option) => {
     return (
       total +
-      calculateOptionPrice(
-        option,
-        getSelectedLabels(
-          option,
-          gridSelections,
-          selectSelections,
-          listSelections,
-        ),
-      )
+      calculateOptionPrice(option, getSelectedLabels(option, selections))
     );
   }, 0);
 
   return menuItem.price + optionPrice;
+}
+
+export function clampQuantity(nextQuantity: number) {
+  return Math.min(MAX_QUANTITY, Math.max(1, nextQuantity));
 }

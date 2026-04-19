@@ -1,22 +1,17 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from '@tanstack/react-query';
 
-import { getItems } from "@/domains/menu/apis";
-import type { MenuCategory } from "@/shared/types";
+import { getItems } from '@/domains/menu/apis';
+import type { MenuResponse } from '@/shared/types';
 
-const QUERY_KEY = ["menu", "items"] as const;
+const QUERY_KEY = ['menu', 'items'] as const;
+const selectMenus = ({ items }: MenuResponse) => items;
 
-export default function useMenus(category?: MenuCategory) {
+export default function useMenus() {
   return useSuspenseQuery({
-    queryKey: useMenus.getQueryKeys(category),
+    queryKey: useMenus.getQueryKeys(),
     queryFn: getItems,
-    select: (
-      data, // 카테고리 일치 or 전체
-    ) =>
-      category
-        ? data.items.filter((menu) => menu.category === category)
-        : data.items,
+    select: selectMenus,
   });
 }
 
-useMenus.getQueryKeys = (category?: MenuCategory) =>
-  category ? [QUERY_KEY, category] : QUERY_KEY;
+useMenus.getQueryKeys = () => QUERY_KEY;

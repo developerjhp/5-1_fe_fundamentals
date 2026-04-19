@@ -1,13 +1,13 @@
-import { useNavigate, useParams } from "react-router";
-import { toast } from "sonner";
-import { addToCart } from "@/domains/cart/utils";
+import { useNavigate, useParams } from 'react-router';
+import { toast } from 'sonner';
+import { addToCart } from '@/domains/cart/utils';
 import {
   GridOptionField,
   ListOptionField,
   QuantityField,
   SelectOptionBottomSheet,
   SelectOptionField,
-} from "@/domains/menu/components/order";
+} from '@/domains/menu/components/order';
 import {
   contentStyle,
   ctaBarStyle,
@@ -19,19 +19,17 @@ import {
   optionListStyle,
   optionMetaStyle,
   optionTitleGroupStyle,
-} from "@/domains/menu/components/order/styles";
-import { useMenuItem, useOptions, useOrderForm } from "@/domains/menu/hooks";
+} from '@/domains/menu/components/order/styles';
+import { useMenuItem, useOptions, useOrderForm } from '@/domains/menu/hooks';
 
 import {
-  hasBatchim,
-  getSelectedLabels,
   calculateUnitPrice,
-  getSelectRequiredMessage,
-} from "@/domains/menu/utils";
-import { routes } from "@/shared/routes";
-import { formatCurrencyKRW } from "@/shared/utils";
-import { Card, MenuCard } from "@/shared/components";
-import type { CartItem, MenuOption } from "@/shared/types";
+  getOrderValidationMessage,
+} from '@/domains/menu/utils';
+import { Card, MenuCard } from '@/shared/components';
+import { routes } from '@/shared/routes';
+import type { CartItem, MenuOption } from '@/shared/types';
+import { formatCurrencyKRW } from '@/shared/utils';
 
 export default function MenuOrderForm() {
   const navigate = useNavigate();
@@ -48,53 +46,34 @@ export default function MenuOrderForm() {
     gridSelections,
     selectSelections,
     listSelections,
+    selections,
     quantity,
     openedSelectOption,
     selectedOptions,
-    updateQuantity,
-    setGridSelections,
-    setSelectSelections,
-    setBottomSheetSelection,
+    changeQuantity,
+    selectGridOption,
+    openSelectOption,
+    closeSelectOption,
+    selectOption,
     toggleListOption,
   } = useOrderForm(visibleOptions);
 
-  const unitPrice = calculateUnitPrice(
-    menuItem,
-    visibleOptions,
-    gridSelections,
-    selectSelections,
-    listSelections,
-  );
+  const unitPrice = calculateUnitPrice(menuItem, visibleOptions, selections);
 
   const totalPrice = unitPrice * quantity;
+  const openedSelectOptionId = openedSelectOption?.id;
 
-  const AddToCart = () => {
-    for (const option of visibleOptions) {
-      const labels = getSelectedLabels(
-        option,
-        gridSelections,
-        selectSelections,
-        listSelections,
-      );
+  const handleAddToCart = () => {
+    const validationMessage = getOrderValidationMessage(
+      visibleOptions,
+      selections,
+    );
 
-      // 리스트 옵션인데 최소 개수만큼 선택 안됐으면 에러
-      if (option.type === "list" && labels.length < option.minCount) {
-        toast.error(
-          option.minCount === 1
-            ? getSelectRequiredMessage(option.name)
-            : `${option.name}${hasBatchim(option.name) ? "을" : "를"} 최소 ${option.minCount}개 선택해주세요`,
-        );
-        return;
-      }
-
-      // 필수 옵션인데 아무 선택도 안됐으면 에러
-      if (option.required && labels.length === 0) {
-        toast.error(getSelectRequiredMessage(option.name));
-        return;
-      }
+    if (validationMessage) {
+      toast.error(validationMessage);
+      return;
     }
 
-    // 장바구니에 추가할 아이템
     const nextCartItem: CartItem = {
       itemId: menuItem.id,
       title: menuItem.title,
@@ -121,7 +100,7 @@ export default function MenuOrderForm() {
                   {/* 옵션 명 + 필수/선택 텍스트 */}
                   <OptionRequireLabel option={option} />
                   {/* 리스트 옵션일 때만 최소/최대 개수 텍스트 */}
-                  {option.type === "list" && (
+                  {option.type === 'list' && (
                     <Card.Meta css={optionMetaStyle}>
                       {option.minCount}~{option.maxCount}개 선택
                     </Card.Meta>
@@ -129,7 +108,7 @@ export default function MenuOrderForm() {
                 </div>
 
                 {/* 리스트 옵션 */}
-                {option.type === "list" && (
+                {option.type === 'list' && (
                   <ListOptionField
                     option={option}
                     selectedLabels={listSelections[option.id] ?? []}
@@ -138,25 +117,20 @@ export default function MenuOrderForm() {
                 )}
 
                 {/* 그리드 옵션 */}
-                {option.type === "grid" && (
+                {option.type === 'grid' && (
                   <GridOptionField
                     option={option}
                     selectedLabel={gridSelections[option.id]}
-                    onSelect={(label) =>
-                      setGridSelections((current) => ({
-                        ...current,
-                        [option.id]: label,
-                      }))
-                    }
+                    onSelect={(label) => selectGridOption(option.id, label)}
                   />
                 )}
 
                 {/* 셀렉트 옵션 */}
-                {option.type === "select" && (
+                {option.type === 'select' && (
                   <SelectOptionField
                     option={option}
                     selectedLabel={selectSelections[option.id]}
-                    onOpen={() => setBottomSheetSelection(option.id)}
+                    onOpen={() => openSelectOption(option.id)}
                   />
                 )}
               </Card.Root>
@@ -165,29 +139,23 @@ export default function MenuOrderForm() {
         )}
 
         {/* 수량 선택 */}
-        <QuantityField quantity={quantity} onChange={updateQuantity} />
+        <QuantityField quantity={quantity} onChange={changeQuantity} />
       </section>
 
       {/* 장바구니 담기 버튼 */}
       <AddCartButton
         quantity={quantity}
         totalPrice={totalPrice}
-        handleAddToCart={AddToCart}
+        handleAddToCart={handleAddToCart}
       />
 
       {/* 바텀시트(셀렉트 옵션) */}
-      {openedSelectOption && (
+      {openedSelectOption && openedSelectOptionId !== undefined && (
         <SelectOptionBottomSheet
           option={openedSelectOption}
-          selectedLabel={selectSelections[openedSelectOption.id]}
-          onClose={() => setBottomSheetSelection(null)}
-          onSelect={(label) => {
-            setSelectSelections((current) => ({
-              ...current,
-              [openedSelectOption.id]: label,
-            }));
-            setBottomSheetSelection(null);
-          }}
+          selectedLabel={selectSelections[openedSelectOptionId]}
+          onClose={closeSelectOption}
+          onSelect={(label) => selectOption(openedSelectOptionId, label)}
         />
       )}
     </>
@@ -199,7 +167,7 @@ function OptionRequireLabel({ option }: { option: MenuOption }) {
     <div css={optionTitleGroupStyle}>
       <Card.Title>{option.name}</Card.Title>
       <Card.Meta css={optionMetaStyle}>
-        {option.required ? "필수" : "선택"}
+        {option.required ? '필수' : '선택'}
       </Card.Meta>
     </div>
   );
